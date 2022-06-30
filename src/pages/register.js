@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
 import { useState } from 'react'
 
-const Register = () => {
+export default function Register () {
     const { register } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/dashboard',
@@ -118,4 +118,4 @@ const Register = () => {
     )
 }
 
-export default Register
+Register.getLayout = page => <GuestLayout children={page} />

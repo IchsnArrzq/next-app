@@ -8,18 +8,30 @@
     "start": "next start"
   },
   "dependencies": {
+    "@badrap/bar-of-progress": "^0.2.1",
     "@headlessui/react": "^1.4.2",
+    "@mantine/core": "^4.2.11",
+    "@mantine/dates": "^4.2.11",
+    "@mantine/form": "^4.2.11",
+    "@mantine/hooks": "^4.2.11",
+    "@mantine/modals": "^4.2.11",
+    "@mantine/next": "^4.2.11",
+    "@mantine/notifications": "^4.2.11",
+    "@mantine/prism": "^4.2.11",
+    "@mantine/spotlight": "^4.2.11",
     "axios": "^0.21.1",
+    "dayjs": "^1.11.3",
     "next": "^12.0.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "swr": "^1.2.2"
+    "swr": "^1.2.2",
+    "tabler-icons-react": "^1.51.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.12.1",
     "@next/eslint-plugin-next": "^10.0.4",
     "@tailwindcss/forms": "^0.4.0",
-    "autoprefixer": "^10.4.2",
+    "autoprefixer": "10.4.5",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.17.0",
     "eslint-config-prettier": "^7.1.0",

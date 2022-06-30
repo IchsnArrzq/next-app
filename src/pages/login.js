@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/auth'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-const Login = () => {
+export default function Login () {
     const router = useRouter()
 
     const { login } = useAuth({
@@ -119,4 +119,4 @@ const Login = () => {
     )
 }
 
-export default Login
+Login.getLayout = page => <GuestLayout children={page} />

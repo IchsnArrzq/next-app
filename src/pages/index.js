@@ -1,10 +1,16 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/auth'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import GuestLayout from '@/components/Layouts/GuestLayout'
 
 export default function Home() {
     const { user } = useAuth({ middleware: 'guest' })
-
+    const router = useRouter()
+    useEffect(() => {
+        router.push('/login')
+    })
     return (
         <>
             <Head>
@@ -289,3 +295,5 @@ export default function Home() {
         </>
     )
 }
+
+Home.getLayout = page => <GuestLayout children={page} />
