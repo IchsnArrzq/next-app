@@ -1,13 +1,15 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input } from '@mantine/core'
+import { Button, Card, Grid, Group, Select, Stack, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-export default function ProductCreate({ customers }) {
+export default function ProductEdit({ customers }) {
     const router = useRouter()
+    const { id } = router.query
     const [visible, setVisible] = useState(false);
+    const [record, setRecord] = useState('')
     const form = useForm({
         initialValues: {
             customer_id: '',
@@ -26,21 +28,32 @@ export default function ProductCreate({ customers }) {
             dies_lifetime: '',
         }
     })
+    const Find = async () => {
+        setVisible(true)
+        const { data } = await axios.get(`/product/${id}/edit`)
+        form.setValues(data)
+        console.log(data)
+        setRecord(data)
+        setVisible(false)
+    }
+
     const Submit = async e => {
         setVisible(true)
         e.preventDefault()
-        console.log(form.values)
         try {
-            const { data } = await axios.post('/product', form.values)
+            const { data } = await axios.put(`product/${id}`, form.values)
             setVisible(false)
             router.push('/master/product')
-        } catch (err) {
+        } catch (error) {
             setVisible(false)
-            console.log(err.response, err)
+            console.log(error.response)
         }
     }
-    const HandleFileUpload = e => {
-        form.setFieldValue('images', e.target.files[0])
+    useEffect(() => {
+        Find()
+    }, [])
+    const HandleFileUpload = () => {
+
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -51,10 +64,10 @@ export default function ProductCreate({ customers }) {
                         <Button variant='filled' onClick={() => router.push('/master/product')}>
                             back
                         </Button>
-                        <Title order={3}>Create new Product</Title>
+                        <Title order={3}>last updated {record.updated_at}</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit} encType="multipart/form-data">
+                <form onSubmit={Submit}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
@@ -110,12 +123,12 @@ export default function ProductCreate({ customers }) {
                         </Group>
                     </Card.Section>
                 </form>
-            </Card >
+            </Card>
         </div>
     )
 }
-ProductCreate.getLayout = page => <AppLayout children={page} />
-ProductCreate.getInitialProps = async () => {
+ProductEdit.getLayout = page => <AppLayout children={page} />
+ProductEdit.getInitialProps = async () => {
     const { data } = await axios.get('/customer')
     const customers = data.map((customer) => {
         return {

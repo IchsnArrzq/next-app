@@ -4,8 +4,21 @@ import { Button, Card, Group, Table, Title } from '@mantine/core'
 import axios from '@/lib/axios'
 import { useRouter } from 'next/router'
 
-export default function PermissionIndex({permissions}) {
+export default function PermissionIndex({ permissions }) {
     const router = useRouter()
+    const Delete = async e => {
+        try {
+            const { data } = await axios.delete(`/product/${e.target.getAttribute('id')}`)
+            router.push('/master/product')
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+    const Edit = async e => {
+        if (e.target.getAttribute('id')) {
+            router.push(`/master/product/${e.target.getAttribute('id')}`)
+        }
+    }
     return (
         <Card px='xl' py='xl' shadow="sm">
             <Card.Section p="md">
@@ -27,13 +40,13 @@ export default function PermissionIndex({permissions}) {
                     {
                         permissions.map((value, index) => {
                             console.log(value)
-                            return  (
-                                <tr key={index}>
+                            return (
+                                <tr  key={value.id}>
                                     <td>{value.name}</td>
                                     <td>
                                         <Group>
-                                            <Button color={'yellow'}>edit</Button>
-                                            <Button color={'red'}>delete</Button>
+                                            <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
+                                            <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
                                         </Group>
                                     </td>
                                 </tr>

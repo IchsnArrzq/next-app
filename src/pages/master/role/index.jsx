@@ -6,6 +6,19 @@ import { useRouter } from 'next/router'
 
 export default function RoleIndex({ roles }) {
   const router = useRouter()
+  const Delete = async e => {
+      try {
+          const { data } = await axios.delete(`/role/${e.target.getAttribute('id')}`)
+          router.push('/master/role')
+      } catch (error) {
+          console.log(error.response)
+      }
+  }
+  const Edit = async e => {
+      if (e.target.getAttribute('id')) {
+          router.push(`/master/role/${e.target.getAttribute('id')}`)
+      }
+  }
   return (
     <Card px='xl' py='xl' shadow="sm">
       <Card.Section p="md">
@@ -28,13 +41,13 @@ export default function RoleIndex({ roles }) {
           {
             roles.map((value, index) => {
               return (
-                <tr key={index}>
+                <tr  key={value.id}>
                   <td>{value.name}</td>
                   <td>{value.guard_name}</td>
                   <td>
                     <Group>
-                      <Button color={'yellow'}>edit</Button>
-                      <Button color={'red'}>delete</Button>
+                      <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
+                      <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
                     </Group>
                   </td>
                 </tr>

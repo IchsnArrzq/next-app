@@ -6,6 +6,19 @@ import { useRouter } from 'next/router'
 
 export default function UserIndex({ users }) {
     const router = useRouter()
+    const Delete = async e => {
+        try {
+            const { data } = await axios.delete(`/user/${e.target.getAttribute('id')}`)
+            router.push('/master/user')
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+    const Edit = async e => {
+        if (e.target.getAttribute('id')) {
+            router.push(`/master/user/${e.target.getAttribute('id')}`)
+        }
+    }
     return (
         <Card px='xl' py='xl' shadow="sm">
             <Card.Section p="md">
@@ -29,7 +42,7 @@ export default function UserIndex({ users }) {
                     {
                         users.map((value, index) => {
                             return (
-                                <tr key={index}>
+                                <tr key={value.id}>
                                     <td>{value.name}</td>
                                     <td>{value.email}</td>
                                     <td>
@@ -44,8 +57,8 @@ export default function UserIndex({ users }) {
                                     </td>
                                     <td>
                                         <Group>
-                                            <Button color={'yellow'}>edit</Button>
-                                            <Button color={'red'}>delete</Button>
+                                            <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
+                                            <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
                                         </Group>
                                     </td>
                                 </tr>

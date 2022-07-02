@@ -6,6 +6,19 @@ import axios from '@/lib/axios'
 
 export default function ProductIndex({ products }) {
     const router = useRouter()
+    const Delete = async e => {
+        try {
+            const { data } = await axios.delete(`/product/${e.target.getAttribute('id')}`)
+            router.push('/master/product')
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+    const Edit = async e => {
+        if (e.target.getAttribute('id')) {
+            router.push(`/master/product/${e.target.getAttribute('id')}`)
+        }
+    }
     return (
         <Card px='xl' py='xl' shadow="sm">
             <Card.Section p="md">
@@ -30,15 +43,15 @@ export default function ProductIndex({ products }) {
                     {
                         products.map((value, index) => {
                             return (
-                                <tr key={index}>
+                                <tr key={value.id}>
                                     <td>{value.customer.user.name}</td>
                                     <td>{value.customer.user.email}</td>
-                                    <td>{value.part_name }</td>
-                                    <td>{value.part_number }</td>
+                                    <td>{value.part_name}</td>
+                                    <td>{value.part_number}</td>
                                     <td>
                                         <Group>
-                                            <Button color={'yellow'}>edit</Button>
-                                            <Button color={'red'}>delete</Button>
+                                            <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
+                                            <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
                                         </Group>
                                     </td>
                                 </tr>

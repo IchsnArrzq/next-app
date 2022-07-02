@@ -71,6 +71,9 @@ const AppLayout = ({ children }) => {
                             <Button onClick={() => router.push('/master/machine')} fullWidth variant="outline" leftIcon={<Accessible size={14} />}>
                                 machine
                             </Button>
+                            <Button onClick={() => router.push('/master/shift')} fullWidth variant="outline" leftIcon={<Accessible size={14} />}>
+                                shift
+                            </Button>
                         </Group>
                     </Navbar.Section>
                     <Divider />

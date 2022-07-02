@@ -1,15 +1,30 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Group, Table, Title } from '@mantine/core'
+import { useRouter } from 'next/router'
 import React from 'react'
 
-export default function MachineIndex({machines}) {
+export default function MachineIndex({ machines }) {
+    const router = useRouter()
+    const Delete = async e => {
+        try {
+            const { data } = await axios.delete(`/machine/${e.target.getAttribute('id')}`)
+            router.push('/master/machine')
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+    const Edit = async e => {
+        if (e.target.getAttribute('id')) {
+            router.push(`/master/machine/${e.target.getAttribute('id')}`)
+        }
+    }
     return (
         <Card px='xl' py='xl' shadow="sm">
             <Card.Section p="md">
                 <Group position='apart'>
                     <Title order={3}>Machine List</Title>
-                    <Button variant='filled' onClick={() => router.push('/master/product/create')}>
+                    <Button variant='filled' onClick={() => router.push('/master/machine/create')}>
                         create
                     </Button>
                 </Group>
@@ -18,9 +33,7 @@ export default function MachineIndex({machines}) {
                 <thead>
                     <tr>
                         <th>name</th>
-                        <th>email</th>
-                        <th>part name</th>
-                        <th>part number</th>
+                        <th>number</th>
                         <th>action</th>
                     </tr>
                 </thead>
@@ -28,15 +41,13 @@ export default function MachineIndex({machines}) {
                     {
                         machines.map((value, index) => {
                             return (
-                                <tr key={index}>
-                                    <td>{value.id}</td>
-                                    <td>{value.id}</td>
-                                    <td>{value.id}</td>
-                                    <td>{value.id}</td>
+                                <tr  key={value.id}>
+                                    <td>{value.name}</td>
+                                    <td>{value.number}</td>
                                     <td>
                                         <Group>
-                                            <Button color={'yellow'}>edit</Button>
-                                            <Button color={'red'}>delete</Button>
+                                            <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
+                                            <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
                                         </Group>
                                     </td>
                                 </tr>
