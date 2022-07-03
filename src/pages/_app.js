@@ -1,6 +1,5 @@
 import ProgressBar from '@badrap/bar-of-progress';
-import { MantineProvider, useMantineTheme } from '@mantine/core'
-import Head from 'next/head'
+import { useMantineTheme } from '@mantine/core'
 import { Router } from 'next/router';
 
 const App = ({ Component, pageProps }) => {
@@ -16,19 +15,7 @@ const App = ({ Component, pageProps }) => {
     Router.events.on("routeChangeComplete", progress.finish);
     Router.events.on("routeChangeError", progress.finish);
     return getLayout(
-        <MantineProvider
-            theme={{
-                headings: {
-                    fontFamily: 'Roboto, sans-serif'
-                }
-            }}
-        >
-            <Head>
-                <title>Page title</title>
-                <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
-            </Head>
-            <Component {...pageProps} />
-        </MantineProvider>
+        <Component {...pageProps} />
     )
 }
 

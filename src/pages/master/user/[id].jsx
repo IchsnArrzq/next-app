@@ -30,11 +30,11 @@ export default function UserEdit({ roles }) {
         e.preventDefault()
         try {
             const { data } = await axios.put(`user/${id}`, form.values)
-            setVisible(false)
             router.push('/master/user')
         } catch (error) {
-            setVisible(false)
             console.log(error.response)
+        } finally {
+            setVisible(false)
         }
     }
     useEffect(() => {

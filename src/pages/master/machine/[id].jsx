@@ -23,13 +23,15 @@ export default function Machinemachine() {
     }
 
     const Submit = async e => {
-    setVisible(true)
-    e.preventDefault()
+        setVisible(true)
+        e.preventDefault()
         try {
             const { data } = await axios.put(`machine/${id}`, form.values)
             router.push('/master/machine')
         } catch (error) {
             console.log(error.response)
+        } finally {
+            setVisible(false)
         }
     }
     useEffect(() => {

@@ -32,11 +32,11 @@ export default function ProductCreate({ customers }) {
         console.log(form.values)
         try {
             const { data } = await axios.post('/product', form.values)
-            setVisible(false)
             router.push('/master/product')
         } catch (err) {
-            setVisible(false)
             console.log(err.response, err)
+        } finally {
+            setVisible(false)
         }
     }
     const HandleFileUpload = e => {

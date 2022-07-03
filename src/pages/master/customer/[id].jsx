@@ -30,7 +30,7 @@ export default function CustomerEdit({ provinces }) {
     })
     const Find = async () => {
         const { data } = await axios.get(`/customer/${id}/edit`)
-        form.setFieldValue('province',data.province)
+        form.setFieldValue('province', data.province)
         FindCities()
         form.setValues(data)
         form.setFieldValue('email', data.user.email)
@@ -44,11 +44,11 @@ export default function CustomerEdit({ provinces }) {
         e.preventDefault()
         try {
             const { data } = await axios.put(`customer/${id}`, form.values)
-            setVisible(false)
             router.push('/master/customer')
         } catch (error) {
-            setVisible(false)
             console.log(error.response)
+        } finally {
+            setVisible(false)
         }
     }
     const FindCities = async () => {

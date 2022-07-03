@@ -29,13 +29,13 @@ export default function CustomerCreate({ provinces }) {
     const Submit = async (e) => {
         setVisible(true)
         e.preventDefault()
-        try {
+        try {FF
             await axios.post('/customer', form.values)
-            setVisible(false)
             router.push('/master/customer')
         } catch (error) {
-            setVisible(false)
             console.log(error.response.data)
+        }finally {
+            setVisible(false)
         }
     }
     const FindCities = async () => {

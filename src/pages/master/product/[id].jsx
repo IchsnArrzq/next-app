@@ -42,11 +42,11 @@ export default function ProductEdit({ customers }) {
         e.preventDefault()
         try {
             const { data } = await axios.put(`product/${id}`, form.values)
-            setVisible(false)
             router.push('/master/product')
         } catch (error) {
-            setVisible(false)
             console.log(error.response)
+        } finally {
+            setVisible(false)
         }
     }
     useEffect(() => {

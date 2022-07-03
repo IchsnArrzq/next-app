@@ -1,43 +1,62 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, LoadingOverlay, Stack, TextInput, Title } from '@mantine/core'
+import { Button, Card, Grid, Group, LoadingOverlay, Notification, Stack, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react';
 
 export default function ShiftEdit() {
     const router = useRouter()
     const { id } = router.query
     const [visible, setVisible] = useState(false);
-    const [record, setRecord] = useState('')
     const form = useForm({
         initialValues: {
             name: ''
         }
     })
+
     const Find = async () => {
         setVisible(true)
         try {
             const { data } = await axios.get(`/shift/${id}/edit`)
             form.setValues(data)
-            setRecord(data)
-            setVisible(false)
         } catch (error) {
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
+        } finally {
             setVisible(false)
-            console.log(error.response)
         }
     }
 
     const Submit = async e => {
-        setVisible(true)
         e.preventDefault()
+        setVisible(true)
         try {
             const { data } = await axios.put(`shift/${id}`, form.values)
-            setVisible(false)
-            router.push('/master/shift')
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/shift')
+            }, 500)
         } catch (error) {
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
+        } finally {
             setVisible(false)
-            console.log(error.response)
         }
     }
     useEffect(() => {
@@ -52,7 +71,7 @@ export default function ShiftEdit() {
                         <Button variant='filled' onClick={() => router.push('/master/shift')}>
                             back
                         </Button>
-                        <Title order={3}>last updated {record.updated_at}</Title>
+                        <Title order={3}>last updated {form.values.updated_at}</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>
