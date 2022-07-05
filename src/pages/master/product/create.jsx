@@ -1,9 +1,10 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input } from '@mantine/core'
+import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input, LoadingOverlay } from '@mantine/core'
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
+import { Check, X } from 'tabler-icons-react'
 
 export default function ProductCreate({ customers }) {
     const router = useRouter()
@@ -27,14 +28,28 @@ export default function ProductCreate({ customers }) {
         }
     })
     const Submit = async e => {
-        setVisible(true)
         e.preventDefault()
-        console.log(form.values)
+        setVisible(true)
         try {
             const { data } = await axios.post('/product', form.values)
-            router.push('/master/product')
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/product')
+            }, 500)
         } catch (err) {
-            console.log(err.response, err)
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
         } finally {
             setVisible(false)
         }
@@ -51,7 +66,7 @@ export default function ProductCreate({ customers }) {
                         <Button variant='filled' onClick={() => router.push('/master/product')}>
                             back
                         </Button>
-                        <Title order={3}>Create new Product</Title>
+                        <Title order={5}>Create new Product</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit} encType="multipart/form-data">
@@ -59,7 +74,7 @@ export default function ProductCreate({ customers }) {
                         <Group>
                             <Grid grow>
                                 <Grid.Col span={4}>
-                                    <Select autoFocus id="customer" label="customer" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={customers} {...form.getInputProps('customer_id')} />
+                                    <Select id="customer" label="customer" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={customers} {...form.getInputProps('customer_id')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
                                     <TextInput id="part_name" label="Part Name" placeholder='part_name' {...form.getInputProps('part_name')} />
@@ -119,8 +134,8 @@ ProductCreate.getInitialProps = async () => {
     const { data } = await axios.get('/customer')
     const customers = data.map((customer) => {
         return {
-            'value': customer.id,
-            'label': `${customer.user.name} - ${customer.alias}`
+            'value': String(customer.id),
+            'label': String(`${customer.user.name} - ${customer.alias}`)
         }
     })
     return {

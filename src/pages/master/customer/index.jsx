@@ -1,28 +1,41 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import React, { useState } from 'react'
 import { Card, Title, Table, Grid, Group, Button, LoadingOverlay } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import axios from '@/lib/axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { Check, X } from 'tabler-icons-react'
 
 export default function CustomerIndex({ customers }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
-    const Delete = async e => {
+    const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/customer/${e.target.getAttribute('id')}`)
-            setVisible(false)
+            const { data } = await axios.delete(`/customer/${id}`)
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
             router.push('/master/customer')
         } catch (error) {
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
+        } finally {
             setVisible(false)
-            console.log(error.response)
         }
     }
-    const Edit = async e => {
-        if (e.target.getAttribute('id')) {
-            router.push(`/master/customer/${e.target.getAttribute('id')}`)
-        }
+    const Edit = async id => {
+        router.push(`/master/customer/${id}`)
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -30,13 +43,13 @@ export default function CustomerIndex({ customers }) {
             <Card px='xl' py='xl' shadow="sm">
                 <Card.Section p="md">
                     <Group position='apart'>
-                        <Title order={3}>Customer List</Title>
+                        <Title order={5}>Customer List</Title>
                         <Button variant='filled' onClick={() => router.push('/master/customer/create')}>
                             create
                         </Button>
                     </Group>
                 </Card.Section>
-                <Table>
+                <Table verticalSpacing="xs" fontSize="xs">
                     <thead>
                         <tr>
                             <th>name</th>
@@ -57,8 +70,8 @@ export default function CustomerIndex({ customers }) {
                                         <td>{value.pic}</td>
                                         <td>
                                             <Group>
-                                                <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
-                                                <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
+                                                <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
+                                                <Button color={'red'} id={value.id} onClick={() => Delete(value.id)}>delete</Button>
                                             </Group>
                                         </td>
                                     </tr>

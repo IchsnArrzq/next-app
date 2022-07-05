@@ -49,7 +49,7 @@ export default function UserEdit({ roles }) {
                         <Button variant='filled' onClick={() => router.push('/master/user')}>
                             back
                         </Button>
-                        <Title order={3}>last updated {record.updated_at}</Title>
+                        <Title order={5}>last updated {record.updated_at}</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>
@@ -66,7 +66,7 @@ export default function UserEdit({ roles }) {
                                     <TextInput id="password" label="password" placeholder='password' {...form.getInputProps('password')} />
                                 </Grid.Col>
                                 <Grid.Col span={5}>
-                                    <MultiSelect autoFocus id="roles" label="roles" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={roles} {...form.getInputProps('roles')} />
+                                    <MultiSelect autoFocus id="roles" label="roles" searchable data={roles} {...form.getInputProps('roles')} />
                                 </Grid.Col>
                             </Grid>
                         </Group>

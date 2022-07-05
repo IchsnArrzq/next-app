@@ -1,40 +1,38 @@
 import AppLayout from '@/components/Layouts/AppLayout'
-import React, { useState } from 'react'
-import { Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
-import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
-import { useRouter } from 'next/router'
 import axios from '@/lib/axios'
-import { Check, X } from 'tabler-icons-react';
+import { Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
+import { showNotification } from '@mantine/notifications'
+import { useRouter } from 'next/router'
+import React, { useState } from 'react'
+import { Check, X } from 'tabler-icons-react'
 
-export default function ProductIndex({ products }) {
+export default function PlanningIndex({ plannings }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/product/${id}`)
+            const { data } = await axios.delete(`/planning/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
                 color: 'teal'
             })
-            router.push('/master/product')
+            router.push('/activity/planning')
         } catch (error) {
-            if (error.response) {
-                showNotification({
-                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
-                    message: `${error.response.data.message ?? 'error'}`,
-                    icon: <X />,
-                    color: 'red'
-                })
-            }
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
         } finally {
             setVisible(false)
         }
     }
     const Edit = async id => {
-        router.push(`/master/product/${id}`)
+        router.push(`/activity/planning/${id}`)
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -42,8 +40,8 @@ export default function ProductIndex({ products }) {
             <Card px='xl' py='xl' shadow="sm">
                 <Card.Section p="md">
                     <Group position='apart'>
-                        <Title order={5}>Product List</Title>
-                        <Button variant='filled' onClick={() => router.push('/master/product/create')}>
+                        <Title order={5}>Planning List</Title>
+                        <Button variant='filled' onClick={() => router.push('/activity/planning/create')}>
                             create
                         </Button>
                     </Group>
@@ -51,22 +49,26 @@ export default function ProductIndex({ products }) {
                 <Table verticalSpacing="xs" fontSize="xs">
                     <thead>
                         <tr>
-                            <th>name</th>
-                            <th>email</th>
-                            <th>part name</th>
-                            <th>part number</th>
+                            <th>date</th>
+                            <th>product</th>
+                            <th>machine</th>
+                            <th>shift</th>
+                            <th>time</th>
+                            <th>out</th>
                             <th>action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            products.map((value, index) => {
+                            plannings.map((value, index) => {
                                 return (
                                     <tr key={value.id}>
-                                        <td>{value.customer.user.name}</td>
-                                        <td>{value.customer.user.email}</td>
-                                        <td>{value.part_name}</td>
-                                        <td>{value.part_number}</td>
+                                        <td>{value.date}</td>
+                                        <td>{value.product.part_name}</td>
+                                        <td>{value.machine.name}</td>
+                                        <td>{value.shift.name}</td>
+                                        <td>{value.in}</td>
+                                        <td>{value.out}</td>
                                         <td>
                                             <Group>
                                                 <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
@@ -83,11 +85,11 @@ export default function ProductIndex({ products }) {
         </div>
     )
 }
-ProductIndex.getLayout = page => <AppLayout children={page} />
-ProductIndex.getInitialProps = async () => {
-    const { data } = await axios.get('product')
+
+PlanningIndex.getLayout = page => <AppLayout children={page} />
+PlanningIndex.getInitialProps = async () => {
+    const { data } = await axios.get('planning')
     return {
-        products: data
+        plannings: data
     }
 }
-

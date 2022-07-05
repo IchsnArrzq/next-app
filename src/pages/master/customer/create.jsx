@@ -1,9 +1,11 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Grid, Group, LoadingOverlay, PasswordInput, Select, Stack, Textarea, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react'
 
 export default function CustomerCreate({ provinces }) {
     const router = useRouter()
@@ -29,12 +31,27 @@ export default function CustomerCreate({ provinces }) {
     const Submit = async (e) => {
         setVisible(true)
         e.preventDefault()
-        try {FF
+        try {
             await axios.post('/customer', form.values)
-            router.push('/master/customer')
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {    
+                router.push('/master/customer')
+            }, 500)
         } catch (error) {
-            console.log(error.response.data)
-        }finally {
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
+        } finally {
             setVisible(false)
         }
     }
@@ -45,8 +62,8 @@ export default function CustomerCreate({ provinces }) {
                 const { data } = await axios.get(`/city/${form.values.province}`)
                 const cities = data.map((city) => {
                     return {
-                        'value': city.id,
-                        'label': city.nama
+                        'value': String(city.id),
+                        'label': String(city.nama)
                     }
                 })
                 setCities(cities)
@@ -65,7 +82,7 @@ export default function CustomerCreate({ provinces }) {
                         <Button variant='filled' onClick={() => router.push('/master/customer')}>
                             back
                         </Button>
-                        <Title order={3}>Create new Customer</Title>
+                        <Title order={5}>Create new Customer</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>
@@ -99,10 +116,10 @@ export default function CustomerCreate({ provinces }) {
                                     <TextInput required id="no" label="no fax" placeholder='73829479' {...form.getInputProps('number_fax')} />
                                 </Grid.Col>
                                 <Grid.Col md={4} sm={6}>
-                                    <Select onSelect={FindCities} required searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" id="provinces" label="provinces" data={provinces} {...form.getInputProps('province')} />
+                                    <Select onSelect={() => FindCities()} required searchable id="provinces" label="provinces" data={provinces} {...form.getInputProps('province')} />
                                 </Grid.Col>
                                 <Grid.Col md={4} sm={6}>
-                                    <Select required id="cities" label="cities" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={cities} {...form.getInputProps('city')} />
+                                    <Select required label="cities" searchable data={cities} {...form.getInputProps('city')} />
                                 </Grid.Col>
                                 <Grid.Col md={4} sm={6}>
                                     <TextInput required id="postcode" label="postcode" placeholder='postcode' {...form.getInputProps('postcode')} />
@@ -140,8 +157,8 @@ CustomerCreate.getInitialProps = async () => {
     const { data } = await axios.get('/provinces')
     const provinces = data.map((province) => {
         return {
-            'value': province.id,
-            'label': province.nama
+            'value': String(province.id),
+            'label': String(province.nama)
         }
     })
     return {

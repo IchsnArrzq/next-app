@@ -1,13 +1,15 @@
 import ProgressBar from '@badrap/bar-of-progress';
+import 'dayjs/locale/id'
 import { useMantineTheme } from '@mantine/core'
 import { Router } from 'next/router';
+
 
 const App = ({ Component, pageProps }) => {
     const theme = useMantineTheme()
     const getLayout = Component.getLayout || (page => page)
     const progress = new ProgressBar({
         size: 2,
-        color: theme.colors.blue[8],
+        color: theme.colors.yellow[8],
         className: "bar-of-progress",
         delay: 100,
     });

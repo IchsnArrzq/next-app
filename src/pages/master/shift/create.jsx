@@ -49,7 +49,7 @@ export default function ShiftCreate() {
                         <Button variant='filled' onClick={() => router.push('/master/shift')}>
                             back
                         </Button>
-                        <Title order={3}>Create new Shift</Title>
+                        <Title order={5}>Create new Shift</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>

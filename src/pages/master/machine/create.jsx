@@ -1,9 +1,11 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Grid, Group, LoadingOverlay, Stack, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
+import { Check, X } from 'tabler-icons-react';
 
 export default function MachineCreate() {
     const router = useRouter()
@@ -19,8 +21,22 @@ export default function MachineCreate() {
         e.preventDefault()
         try {
             const { data } = await axios.post('machine', form.values)
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/machine')
+            }, 500)
         } catch (error) {
-            console.log(error.response)
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
         } finally {
             setVisible(false)
         }
@@ -35,7 +51,7 @@ export default function MachineCreate() {
                         <Button variant='filled' onClick={() => router.push('/master/machine')}>
                             back
                         </Button>
-                        <Title order={3}>Create new Machine</Title>
+                        <Title order={5}>Create new Machine</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>

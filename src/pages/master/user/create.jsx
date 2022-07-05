@@ -1,5 +1,9 @@
 import AppLayout from '@/components/Layouts/AppLayout'
-import React from 'react'
+import { Button, Card, Grid, Group, LoadingOverlay, TextInput, Title } from '@mantine/core';
+import { useForm } from '@mantine/hooks';
+import { useRouter } from 'next/router';
+import React, { useState } from 'react'
+import { Stack } from 'tabler-icons-react';
 
 export default function UserCreate() {
     const router = useRouter()
@@ -30,7 +34,7 @@ export default function UserCreate() {
                         <Button variant='filled' onClick={() => router.push('/master/user')}>
                             back
                         </Button>
-                        <Title order={3}>Create new User</Title>
+                        <Title order={5}>Create new User</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>

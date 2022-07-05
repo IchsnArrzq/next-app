@@ -71,7 +71,7 @@ export default function ShiftEdit() {
                         <Button variant='filled' onClick={() => router.push('/master/shift')}>
                             back
                         </Button>
-                        <Title order={3}>last updated {form.values.updated_at}</Title>
+                        <Title order={5}>last updated {form.values.updated_at}</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>

@@ -1,6 +1,6 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, Select, Stack, TextInput, Title } from '@mantine/core'
+import { Button, Card, Grid, Group, LoadingOverlay, Select, Stack, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
@@ -32,14 +32,15 @@ export default function ProductEdit({ customers }) {
         setVisible(true)
         const { data } = await axios.get(`/product/${id}/edit`)
         form.setValues(data)
+        form.setFieldValue('customer_id',String(data.customer_id))
         console.log(data)
         setRecord(data)
         setVisible(false)
     }
 
     const Submit = async e => {
-        setVisible(true)
         e.preventDefault()
+        setVisible(true)
         try {
             const { data } = await axios.put(`product/${id}`, form.values)
             router.push('/master/product')
@@ -64,7 +65,7 @@ export default function ProductEdit({ customers }) {
                         <Button variant='filled' onClick={() => router.push('/master/product')}>
                             back
                         </Button>
-                        <Title order={3}>last updated {record.updated_at}</Title>
+                        <Title order={5}>last updated {record.updated_at}</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>
@@ -72,7 +73,7 @@ export default function ProductEdit({ customers }) {
                         <Group>
                             <Grid grow>
                                 <Grid.Col span={4}>
-                                    <Select autoFocus id="customer" label="customer" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={customers} {...form.getInputProps('customer_id')} />
+                                    <Select id="customer" label="customer" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={customers} {...form.getInputProps('customer_id')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
                                     <TextInput id="part_name" label="Part Name" placeholder='part_name' {...form.getInputProps('part_name')} />
@@ -132,8 +133,8 @@ ProductEdit.getInitialProps = async () => {
     const { data } = await axios.get('/customer')
     const customers = data.map((customer) => {
         return {
-            'value': customer.id,
-            'label': `${customer.user.name} - ${customer.alias}`
+            'value': String(customer.id),
+            'label': String(`${customer.user.name} - ${customer.alias}`)
         }
     })
     return {

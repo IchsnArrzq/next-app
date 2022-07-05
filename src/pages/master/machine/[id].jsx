@@ -1,9 +1,11 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, Stack, TextInput, Title } from '@mantine/core'
+import { Button, Card, Grid, Group, LoadingOverlay, Stack, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react'
 
 export default function Machinemachine() {
     const router = useRouter()
@@ -27,9 +29,22 @@ export default function Machinemachine() {
         e.preventDefault()
         try {
             const { data } = await axios.put(`machine/${id}`, form.values)
-            router.push('/master/machine')
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/machine')
+            }, 500)
         } catch (error) {
-            console.log(error.response)
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
         } finally {
             setVisible(false)
         }
@@ -47,7 +62,7 @@ export default function Machinemachine() {
                         <Button variant='filled' onClick={() => router.push('/master/machine')}>
                             back
                         </Button>
-                        <Title order={3}>last updated {record.updated_at}</Title>
+                        <Title order={5}>Edit Machine</Title>
                     </Group>
                 </Card.Section>
                 <form onSubmit={Submit}>
