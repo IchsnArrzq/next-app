@@ -20,9 +20,10 @@ import {
     Accordion,
     ThemeIcon,
     Stack,
+    ActionIcon,
 } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
-import { Settings, DoorExit, Users, Accessible, AppWindow, License, MoodHappy, BuildingStore, BuildingFactory2, Clock, DeviceDesktopAnalytics, CalendarStats, LayoutGrid, Server } from 'tabler-icons-react';
+import { Settings, DoorExit, Users, Accessible, AppWindow, License, MoodHappy, BuildingStore, BuildingFactory2, Clock, DeviceDesktopAnalytics, CalendarStats, LayoutGrid, Server, ChevronLeft, ChevronsLeft } from 'tabler-icons-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
 import ApplicationLogo from '../ApplicationLogo';
@@ -31,26 +32,28 @@ import Breadcrumb from './Breadcrumb';
 import { useWindowScroll } from '@mantine/hooks';
 
 const AppLayout = ({ children }) => {
+
     const [scroll, scrollTo] = useWindowScroll();
     const router = useRouter()
     const theme = useMantineTheme();
     const [opened, setOpened] = useState(false);
+    const [navbar, setNavbar] = useState(250);
     const title = opened ? 'Close navigation' : 'Open navigation';
     const { user, logout } = useAuth({ middleware: 'auth' })
-    const Authenticated = () => {
+
+    useEffect(() => {
         if (!user) {
             router.push('/login')
         }
-    }
-    useEffect(() => {
-        Authenticated()
     }, [])
+
     return (
         <MantineProvider
             theme={{
                 headings: {
                     fontFamily: 'Roboto, sans-serif'
-                }
+                },
+                colorScheme: 'light'
             }}
         >
             <NotificationsProvider>
@@ -58,10 +61,19 @@ const AppLayout = ({ children }) => {
                     navbarOffsetBreakpoint="sm"
                     asideOffsetBreakpoint="sm"
                     fixed
-                    style={{ backgroundColor: theme.colors.blue[1] }}
+                    styles={{
+                        main: {
+                            background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.blue[0],
+                        }
+                    }}
                     navbar={
-                        <Navbar p="xs" className='bg-blue-500' hiddenBreakpoint="sm" hidden={!opened} width={{ sm: 200, lg: 250 }}>
+                        <Navbar p="xs" className='bg-blue-500' hiddenBreakpoint="sm" hidden={!opened} width={{ sm: 200, lg: navbar }}>
                             <Navbar.Section mb="xs">
+                                <Group position='right'>
+                                    <ActionIcon>
+                                        <ChevronsLeft style={{ transform: navbar == 250 ? "rotate(0deg)" : "rotate(180deg)" }} onClick={() => navbar == 250 ? setNavbar(100) : setNavbar(250)} />
+                                    </ActionIcon>
+                                </Group>
                                 <Center>
                                     <ApplicationLogo />
                                 </Center>
@@ -190,10 +202,15 @@ const AppLayout = ({ children }) => {
                                 <UnstyledButton onClick={() => console.log('try focusing button with tab')}>
                                     <Group>
                                         <Avatar size={40} color="blue">BH</Avatar>
-                                        <div>
-                                            <Text>{user ? user.name : ''}</Text>
-                                            <Text size="xs" color="gray">{user ? user.email : ''}</Text>
-                                        </div>
+                                        {
+                                            navbar == 250 ?
+                                                <div>
+                                                    <Text>{user ? user.name : ''}</Text>
+                                                    <Text size="xs" color="gray">{user ? user.email : ''}</Text>
+                                                </div>
+                                                :
+                                                null
+                                        }
                                     </Group>
                                 </UnstyledButton>
                             </Navbar.Section>

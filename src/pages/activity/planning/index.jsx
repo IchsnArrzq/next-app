@@ -53,7 +53,7 @@ export default function PlanningIndex({ plannings }) {
                             <th>product</th>
                             <th>machine</th>
                             <th>shift</th>
-                            <th>time</th>
+                            <th>in</th>
                             <th>out</th>
                             <th>action</th>
                         </tr>

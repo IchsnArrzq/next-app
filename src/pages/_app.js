@@ -1,5 +1,4 @@
 import ProgressBar from '@badrap/bar-of-progress';
-import 'dayjs/locale/id'
 import { useMantineTheme } from '@mantine/core'
 import { Router } from 'next/router';
 
