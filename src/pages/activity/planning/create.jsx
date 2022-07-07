@@ -28,7 +28,7 @@ export default function PlanningCreate({ products, machines, shifts }) {
         e.preventDefault()
         setVisible(true)
         try {
-            const { data } = await axios.post('planning', {
+            const { data } = await axios.post('/api/planning', {
                 date: dayjs(form.values.date).format('YYYY-MM-DD'),
                 product_id: form.values.product_id,
                 machine_id: form.values.machine_id,
@@ -113,31 +113,59 @@ export default function PlanningCreate({ products, machines, shifts }) {
 }
 
 PlanningCreate.getLayout = page => <AppLayout children={page} />
-PlanningCreate.getInitialProps = async () => {
-    const product = await axios.get('product')
-    const machine = await axios.get('machine')
-    const shift = await axios.get('shift')
-    const products = product.data.map((item) => {
+export async function getServerSideProps(context) {
+    try {
+        const product = await axios.get('/api/product', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        const machine = await axios.get('/api/machine', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        const shift = await axios.get('/api/shift', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+
+        const products = product.data.map((item) => {
+            return {
+                'value': String(item.id),
+                'label': String(item.part_name)
+            }
+        })
+        const machines = machine.data.map((item) => {
+            return {
+                'value': String(item.id),
+                'label': String(item.name)
+            }
+        })
+        const shifts = shift.data.map((item) => {
+            return {
+                'value': String(item.id),
+                'label': String(item.name)
+            }
+        })
         return {
-            'value': String(item.id),
-            'label': String(item.part_name)
+            props: {
+                products,
+                machines,
+                shifts,
+            }
         }
-    })
-    const machines = machine.data.map((item) => {
+    } catch (error) {
         return {
-            'value': String(item.id),
-            'label': String(item.name)
+            props: {
+                products: null,
+                machines: null,
+                shifts: null,
+            }
         }
-    })
-    const shifts = shift.data.map((item) => {
-        return {
-            'value': String(item.id),
-            'label': String(item.name)
-        }
-    })
-    return {
-        products,
-        machines,
-        shifts,
     }
 }

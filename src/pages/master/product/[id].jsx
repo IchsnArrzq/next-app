@@ -1,9 +1,11 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Grid, Group, LoadingOverlay, Select, Stack, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications'; 
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react'
 
 export default function ProductEdit({ customers }) {
     const router = useRouter()
@@ -30,10 +32,9 @@ export default function ProductEdit({ customers }) {
     })
     const Find = async () => {
         setVisible(true)
-        const { data } = await axios.get(`/product/${id}/edit`)
+        const { data } = await axios.get(`/api/product/${id}/edit`)
         form.setValues(data)
-        form.setFieldValue('customer_id',String(data.customer_id))
-        console.log(data)
+        form.setFieldValue('customer_id', String(data.customer_id))
         setRecord(data)
         setVisible(false)
     }
@@ -42,10 +43,25 @@ export default function ProductEdit({ customers }) {
         e.preventDefault()
         setVisible(true)
         try {
-            const { data } = await axios.put(`product/${id}`, form.values)
-            router.push('/master/product')
+            const { data } = await axios.put(`/api/product/${id}`, form.values)
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/product')
+            }, 500)
         } catch (error) {
-            console.log(error.response)
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
         } finally {
             setVisible(false)
         }
@@ -129,8 +145,13 @@ export default function ProductEdit({ customers }) {
     )
 }
 ProductEdit.getLayout = page => <AppLayout children={page} />
-ProductEdit.getInitialProps = async () => {
-    const { data } = await axios.get('/customer')
+export async function getServerSideProps(context) {
+    const { data } = await axios.get('/api/customer', {
+        headers: {
+            origin: process.env.ORIGIN,
+            Cookie: context.req.headers.cookie
+        }
+    })
     const customers = data.map((customer) => {
         return {
             'value': String(customer.id),
@@ -138,6 +159,8 @@ ProductEdit.getInitialProps = async () => {
         }
     })
     return {
-        customers
+        props: {
+            customers
+        }
     }
 }

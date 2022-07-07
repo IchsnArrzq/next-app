@@ -12,14 +12,16 @@ export default function UserIndex({ users }) {
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/user/${id}`)
+            const { data } = await axios.delete(`/api/user/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
                 color: 'teal'
             })
-            router.push('/master/user')
+            setTimeout(() => {
+                router.push('/master/user')
+            }, 500)
         } catch (error) {
             showNotification({
                 title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -90,9 +92,24 @@ export default function UserIndex({ users }) {
 }
 
 UserIndex.getLayout = page => <AppLayout children={page} />
-UserIndex.getInitialProps = async () => {
-    const { data } = await axios.get('user')
-    return {
-        users: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/user', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                users: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                users: null
+            }
+        }
     }
 }

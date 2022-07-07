@@ -1,18 +1,19 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
+import Login from '@/pages/login';
 import { ActionIcon, Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
 import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { ArrowNarrowDown, ArrowNarrowUp, Check, X } from 'tabler-icons-react';
 
-export default function ShiftIndex({ shifts }) {
+export default function ShiftIndex({ shifts, context }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/shift/${id}`)
+            const { data } = await axios.delete(`/api/shift/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -33,6 +34,9 @@ export default function ShiftIndex({ shifts }) {
     }
     const Edit = async id => {
         router.push(`/master/shift/${id}`)
+    }
+    if (shifts === null) {
+        return <Login />
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -83,9 +87,24 @@ export default function ShiftIndex({ shifts }) {
 }
 
 ShiftIndex.getLayout = page => <AppLayout children={page} />
-ShiftIndex.getInitialProps = async () => {
-    const { data } = await axios.get('/shift')
-    return {
-        shifts: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/shift', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                shifts: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                shifts: null
+            }
+        }
     }
 }

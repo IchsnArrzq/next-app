@@ -1,6 +1,7 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input, LoadingOverlay } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications'; 
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
@@ -31,7 +32,7 @@ export default function ProductCreate({ customers }) {
         e.preventDefault()
         setVisible(true)
         try {
-            const { data } = await axios.post('/product', form.values)
+            const { data } = await axios.post('/api/product', form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -41,7 +42,7 @@ export default function ProductCreate({ customers }) {
             setTimeout(() => {
                 router.push('/master/product')
             }, 500)
-        } catch (err) {
+        } catch (error) {
             if (error.response) {
                 showNotification({
                     title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -130,8 +131,13 @@ export default function ProductCreate({ customers }) {
     )
 }
 ProductCreate.getLayout = page => <AppLayout children={page} />
-ProductCreate.getInitialProps = async () => {
-    const { data } = await axios.get('/customer')
+export async function getServerSideProps(context) {
+    const { data } = await axios.get('/api/customer', {
+        headers: {
+            origin: process.env.ORIGIN,
+            Cookie: context.req.headers.cookie
+        }
+    })
     const customers = data.map((customer) => {
         return {
             'value': String(customer.id),
@@ -139,6 +145,8 @@ ProductCreate.getInitialProps = async () => {
         }
     })
     return {
-        customers
+        props: {
+            customers
+        }
     }
 }

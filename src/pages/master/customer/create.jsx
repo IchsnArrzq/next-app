@@ -32,14 +32,14 @@ export default function CustomerCreate({ provinces }) {
         setVisible(true)
         e.preventDefault()
         try {
-            await axios.post('/customer', form.values)
+            const { data } = await axios.post('/customer', form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
                 color: 'teal'
             })
-            setTimeout(() => {    
+            setTimeout(() => {
                 router.push('/master/customer')
             }, 500)
         } catch (error) {
@@ -153,8 +153,13 @@ export default function CustomerCreate({ provinces }) {
     )
 }
 CustomerCreate.getLayout = page => <AppLayout children={page} />
-CustomerCreate.getInitialProps = async () => {
-    const { data } = await axios.get('/provinces')
+export async function getServerSideProps(context) {
+    const { data } = await axios.get('/provinces', {
+        headers: {
+            origin: process.env.ORIGIN,
+            Cookie: context.req.headers.cookie
+        }
+    })
     const provinces = data.map((province) => {
         return {
             'value': String(province.id),
@@ -162,6 +167,8 @@ CustomerCreate.getInitialProps = async () => {
         }
     })
     return {
-        provinces
+        props: {
+            provinces
+        }
     }
 }

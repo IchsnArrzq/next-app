@@ -12,14 +12,16 @@ export default function PlanningIndex({ plannings }) {
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/planning/${id}`)
+            const { data } = await axios.delete(`/api/planning/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
                 color: 'teal'
             })
-            router.push('/activity/planning')
+            setTimeout(() => {
+                router.push('/activity/planning')
+            },500)
         } catch (error) {
             showNotification({
                 title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -55,6 +57,8 @@ export default function PlanningIndex({ plannings }) {
                             <th>shift</th>
                             <th>in</th>
                             <th>out</th>
+                            <th>total hour</th>
+                            <th>qty planning</th>
                             <th>action</th>
                         </tr>
                     </thead>
@@ -69,6 +73,8 @@ export default function PlanningIndex({ plannings }) {
                                         <td>{value.shift.name}</td>
                                         <td>{value.in}</td>
                                         <td>{value.out}</td>
+                                        <td>{value.total}</td>
+                                        <td>{value.qty_planning}</td>
                                         <td>
                                             <Group>
                                                 <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
@@ -87,9 +93,24 @@ export default function PlanningIndex({ plannings }) {
 }
 
 PlanningIndex.getLayout = page => <AppLayout children={page} />
-PlanningIndex.getInitialProps = async () => {
-    const { data } = await axios.get('planning')
-    return {
-        plannings: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/planning', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                plannings: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                plannings: null
+            }
+        }
     }
 }

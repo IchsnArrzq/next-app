@@ -1,9 +1,11 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Grid, Group, LoadingOverlay, MultiSelect, Stack, TextInput, Title } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react';
 
 export default function UserEdit({ roles }) {
     const router = useRouter()
@@ -19,20 +21,47 @@ export default function UserEdit({ roles }) {
         }
     })
     const Find = async () => {
-        const { data } = await axios.get(`/user/${id}/edit`)
-        form.setValues(data)
-        form.setFieldValue('roles', data.roles.map((value, index) => value.id))
-        setRecord(data)
+        setVisible(true)
+        try {
+            const { data } = await axios.get(`/api/user/${id}/edit`)
+            form.setValues(data)
+            form.setFieldValue('roles', data.roles.map((value, index) => String(value.id)))
+            setRecord(data)
+        } catch (error) {
+            showNotification({
+                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                message: `${error.response.data.message ?? 'error'}`,
+                icon: <X />,
+                color: 'red'
+            })
+        } finally {
+            setVisible(false)
+        }
     }
 
     const Submit = async e => {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.put(`user/${id}`, form.values)
-            router.push('/master/user')
+            const { data } = await axios.put(`/api/user/${id}`, form.values)
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/user')
+            }, 500)
         } catch (error) {
-            console.log(error.response)
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
         } finally {
             setVisible(false)
         }
@@ -83,16 +112,31 @@ export default function UserEdit({ roles }) {
     )
 }
 UserEdit.getLayout = page => <AppLayout children={page} />
-UserEdit.getInitialProps = async () => {
-    const { data } = await axios.get('role')
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/role', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
 
-    const roles = data.map((role) => {
+        const roles = data.map((role) => {
+            return {
+                'value': String(role.id),
+                'label': String(role.name)
+            }
+        })
         return {
-            'value': role.id,
-            'label': role.name
+            props: {
+                roles: roles,
+            }
         }
-    })
-    return {
-        roles
+    } catch (error) {
+        return {
+            props: {
+                roles: null
+            }
+        }
     }
 }

@@ -84,10 +84,25 @@ export default function CustomerIndex({ customers }) {
         </div>
     )
 }
-CustomerIndex.getInitialProps = async () => {
-    const { data } = await axios.get('/customer')
-    return {
-        customers: data
+CustomerIndex.getLayout = page => <AppLayout children={page} />
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/customer', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                customers: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                customers: null
+            }
+        }
     }
 }
-CustomerIndex.getLayout = page => <AppLayout children={page} />

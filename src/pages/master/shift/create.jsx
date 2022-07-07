@@ -19,7 +19,7 @@ export default function ShiftCreate() {
         e.preventDefault()
         setVisible(true)
         try {
-            const { data } = await axios.post('shift', form.values)
+            const { data } = await axios.post('/api/shift', form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',

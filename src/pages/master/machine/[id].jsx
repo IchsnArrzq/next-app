@@ -19,7 +19,7 @@ export default function Machinemachine() {
         }
     })
     const Find = async () => {
-        const { data } = await axios.get(`/machine/${id}/edit`)
+        const { data } = await axios.get(`/api/machine/${id}/edit`)
         form.setValues(data)
         setRecord(data)
     }
@@ -28,7 +28,7 @@ export default function Machinemachine() {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.put(`machine/${id}`, form.values)
+            const { data } = await axios.put(`/api/machine/${id}`, form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',

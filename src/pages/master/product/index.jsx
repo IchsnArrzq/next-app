@@ -12,7 +12,7 @@ export default function ProductIndex({ products }) {
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/product/${id}`)
+            const { data } = await axios.delete(`/api/product/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -84,10 +84,24 @@ export default function ProductIndex({ products }) {
     )
 }
 ProductIndex.getLayout = page => <AppLayout children={page} />
-ProductIndex.getInitialProps = async () => {
-    const { data } = await axios.get('product')
-    return {
-        products: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/product', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                products: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                products: null
+            }
+        }
     }
 }
-

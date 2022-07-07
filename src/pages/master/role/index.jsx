@@ -80,9 +80,24 @@ export default function RoleIndex({ roles }) {
   )
 }
 RoleIndex.getLayout = page => <AppLayout children={page} />
-RoleIndex.getInitialProps = async () => {
-  const { data } = await axios.get('role')
-  return {
-    roles: data
+export async function getServerSideProps(context) {
+  try {
+      const { data } = await axios.get('/api/role', {
+          headers: {
+              origin: process.env.ORIGIN,
+              Cookie: context.req.headers.cookie
+          }
+      })
+      return {
+          props: {
+              roles: data,
+          }
+      }
+  } catch (error) {
+      return {
+          props: {
+              roles: null
+          }
+      }
   }
 }

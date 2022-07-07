@@ -20,7 +20,7 @@ export default function ShiftEdit() {
     const Find = async () => {
         setVisible(true)
         try {
-            const { data } = await axios.get(`/shift/${id}/edit`)
+            const { data } = await axios.get(`/api/shift/${id}/edit`)
             form.setValues(data)
         } catch (error) {
             showNotification({
@@ -38,7 +38,7 @@ export default function ShiftEdit() {
         e.preventDefault()
         setVisible(true)
         try {
-            const { data } = await axios.put(`shift/${id}`, form.values)
+            const { data } = await axios.put(`'/api/shift/${id}`, form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',

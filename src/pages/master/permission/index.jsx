@@ -79,10 +79,24 @@ export default function PermissionIndex({ permissions }) {
     )
 }
 PermissionIndex.getLayout = page => <AppLayout children={page} />
-PermissionIndex.getInitialProps = async () => {
-    const { data } = await axios.get('permission')
-    console.log(data)
-    return {
-        permissions: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/permission', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                permissions: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                permissions: null
+            }
+        }
     }
 }

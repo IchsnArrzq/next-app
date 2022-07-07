@@ -81,9 +81,24 @@ export default function MachineIndex({ machines }) {
 }
 
 MachineIndex.getLayout = page => <AppLayout children={page} />
-MachineIndex.getInitialProps = async () => {
-    const { data } = await axios.get('machine')
-    return {
-        machines: data
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/machine', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        return {
+            props: {
+                machines: data,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                machines: null
+            }
+        }
     }
 }

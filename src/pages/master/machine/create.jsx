@@ -20,7 +20,7 @@ export default function MachineCreate() {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.post('machine', form.values)
+            const { data } = await axios.post('/api/machine', form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',

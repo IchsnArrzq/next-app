@@ -1,26 +1,46 @@
 import AppLayout from '@/components/Layouts/AppLayout'
-import { Button, Card, Grid, Group, LoadingOverlay, TextInput, Title } from '@mantine/core';
+import { Button, Card, Grid, Group, LoadingOverlay, MultiSelect, Stack, TextInput, Title } from '@mantine/core';
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react'
-import { Stack } from 'tabler-icons-react';
+import axios from '@/lib/axios';
+import { Check, X } from 'tabler-icons-react';
 
-export default function UserCreate() {
+export default function UserCreate({ roles }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const form = useForm({
         initialValues: {
-            name: ''
+            name: '',
+            email: '',
+            password: '',
+            roles: []
         }
     })
     const Submit = async e => {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.post('user', form.values)
-            router.push('/master/user')
+            const { data } = await axios.post('/api/user', form.values)
+            showNotification({
+                title: data.title ?? 'success',
+                message: data.message ?? 'success',
+                icon: <Check />,
+                color: 'teal'
+            })
+            setTimeout(() => {
+                router.push('/master/user')
+            }, 500)
         } catch (error) {
-            console.log(error.response)
+            if (error.response) {
+                showNotification({
+                    title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                    message: `${error.response.data.message ?? 'error'}`,
+                    icon: <X />,
+                    color: 'red'
+                })
+            }
         } finally {
             setVisible(false)
         }
@@ -41,8 +61,17 @@ export default function UserCreate() {
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
-                                <Grid.Col span={4}>
+                                <Grid.Col span={5}>
                                     <TextInput id="name" label="name" placeholder='name' {...form.getInputProps('name')} />
+                                </Grid.Col>
+                                <Grid.Col span={5}>
+                                    <TextInput id="email" label="email" placeholder='email' {...form.getInputProps('email')} />
+                                </Grid.Col>
+                                <Grid.Col span={5}>
+                                    <TextInput id="password" label="password" placeholder='password' {...form.getInputProps('password')} />
+                                </Grid.Col>
+                                <Grid.Col span={5}>
+                                    <MultiSelect id="roles" label="roles" searchable data={roles} {...form.getInputProps('roles')} />
                                 </Grid.Col>
                             </Grid>
                         </Group>
@@ -60,3 +89,31 @@ export default function UserCreate() {
 }
 
 UserCreate.getLayout = page => <AppLayout children={page} />
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/role', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+
+        const roles = data.map((role) => {
+            return {
+                'value': String(role.id),
+                'label': String(role.name)
+            }
+        })
+        return {
+            props: {
+                roles: roles,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                roles: null
+            }
+        }
+    }
+}
