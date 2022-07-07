@@ -5,6 +5,7 @@ import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import { Check, X } from 'tabler-icons-react';
 
 export default function CustomerEdit({ provinces }) {
     const router = useRouter()
@@ -31,7 +32,7 @@ export default function CustomerEdit({ provinces }) {
     })
     const Find = async () => {
         setVisible(true)
-        const { data } = await axios.get(`/customer/${id}/edit`)
+        const { data } = await axios.get(`/api/customer/${id}/edit`)
         form.setFieldValue('province', data.province)
         FindCities()
         form.setValues(data)
@@ -45,7 +46,7 @@ export default function CustomerEdit({ provinces }) {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.put(`customer/${id}`, form.values)
+            const { data } = await axios.put(`/api/customer/${id}`, form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -56,6 +57,7 @@ export default function CustomerEdit({ provinces }) {
                 router.push('/master/customer')
             }, 500)
         } catch (error) {
+            console.log(error)
             if (error.response) {
                 showNotification({
                     title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -71,7 +73,7 @@ export default function CustomerEdit({ provinces }) {
     const FindCities = async () => {
         if (form.values.province) {
             setCities([])
-            const { data } = await axios.get(`/city/${form.values.province}`)
+            const { data } = await axios.get(`/api/city/${form.values.province}`)
             const cities = data.map((city) => {
                 return {
                     'value': String(city.id),
@@ -166,7 +168,7 @@ export default function CustomerEdit({ provinces }) {
 }
 CustomerEdit.getLayout = page => <AppLayout children={page} />
 CustomerEdit.getInitialProps = async () => {
-    const { data } = await axios.get('/provinces')
+    const { data } = await axios.get('/api/provinces')
     const provinces = data.map((province) => {
         return {
             'value': String(province.id),

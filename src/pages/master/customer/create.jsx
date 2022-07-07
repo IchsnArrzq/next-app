@@ -32,7 +32,7 @@ export default function CustomerCreate({ provinces }) {
         setVisible(true)
         e.preventDefault()
         try {
-            const { data } = await axios.post('/customer', form.values)
+            const { data } = await axios.post('/api/customer', form.values)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -59,7 +59,7 @@ export default function CustomerCreate({ provinces }) {
         if (form.values.province) {
             try {
                 setCities([])
-                const { data } = await axios.get(`/city/${form.values.province}`)
+                const { data } = await axios.get(`/api/city/${form.values.province}`)
                 const cities = data.map((city) => {
                     return {
                         'value': String(city.id),
@@ -154,7 +154,7 @@ export default function CustomerCreate({ provinces }) {
 }
 CustomerCreate.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
-    const { data } = await axios.get('/provinces', {
+    const { data } = await axios.get('/api/provinces', {
         headers: {
             origin: process.env.ORIGIN,
             Cookie: context.req.headers.cookie
