@@ -89,7 +89,7 @@ export default function UserEdit({ roles }) {
                                     <TextInput id="name" label="name" placeholder='name' {...form.getInputProps('name')} />
                                 </Grid.Col>
                                 <Grid.Col span={5}>
-                                    <TextInput id="email" label="email" placeholder='email' {...form.getInputProps('email')} />
+                                    <TextInput id="email" type="email" label="email" placeholder='email' {...form.getInputProps('email')} />
                                 </Grid.Col>
                                 <Grid.Col span={5}>
                                     <TextInput id="password" label="password" placeholder='password' {...form.getInputProps('password')} />

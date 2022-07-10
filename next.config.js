@@ -1,5 +1,6 @@
 module.exports = {
     env: {
-        ORIGIN: 'localhost'
+        ORIGIN: 'localhost',
+        APP_NAME: 'NKP'
     }
 }

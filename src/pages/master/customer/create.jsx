@@ -6,8 +6,9 @@ import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { Check, X } from 'tabler-icons-react'
+import ErrorHandling from '@/components/ErrorHandling';
 
-export default function CustomerCreate({ provinces }) {
+export default function CustomerCreate({ provinces, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const [cities, setCities] = useState([]);
@@ -71,6 +72,9 @@ export default function CustomerCreate({ provinces }) {
                 console.log(error.response.data)
             }
         }
+    }
+    if(errors){
+        return <ErrorHandling errors={errors} />
     }
     return (
 
@@ -154,21 +158,31 @@ export default function CustomerCreate({ provinces }) {
 }
 CustomerCreate.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
-    const { data } = await axios.get('/api/provinces', {
-        headers: {
-            origin: process.env.ORIGIN,
-            Cookie: context.req.headers.cookie
-        }
-    })
-    const provinces = data.map((province) => {
+    try {
+        const { data } = await axios.get('/api/provinces', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        const provinces = data.map((province) => {
+            return {
+                'value': String(province.id),
+                'label': String(province.nama)
+            }
+        })
         return {
-            'value': String(province.id),
-            'label': String(province.nama)
+            props: {
+                provinces,
+                errors: null
+            }
         }
-    })
-    return {
-        props: {
-            provinces
+    } catch (error) {
+        return {
+            props: {
+                provinces: null,
+                errors: JSON.parse(JSON.stringify(error))
+            }
         }
     }
 }

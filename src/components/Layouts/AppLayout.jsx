@@ -194,6 +194,9 @@ const AppLayout = ({ children }) => {
                                                             <Title order={6}>
                                                                 shift
                                                             </Title>
+                                                            <ThemeIcon color="violet" variant="light">
+                                                                <Clock size={14} />
+                                                            </ThemeIcon>
                                                         </Group>
                                                         :
                                                         <ThemeIcon color="violet" variant="light">

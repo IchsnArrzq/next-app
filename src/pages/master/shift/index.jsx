@@ -7,7 +7,8 @@ import { useRouter } from 'next/router'
 import React, { Fragment, useState } from 'react'
 import { ArrowNarrowDown, ArrowNarrowUp, Check, X } from 'tabler-icons-react';
 
-export default function ShiftIndex({ shifts, context }) {
+export default function ShiftIndex({ shifts, context, errors }) {
+    console.log(errors)
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
@@ -35,8 +36,11 @@ export default function ShiftIndex({ shifts, context }) {
     const Edit = async id => {
         router.push(`/master/shift/${id}`)
     }
-    if (shifts === null) {
-        return <Login />
+    if (errors) {
+        console.log(errors)
+        return <>
+        asd
+        </>
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -98,12 +102,14 @@ export async function getServerSideProps(context) {
         return {
             props: {
                 shifts: data,
+                errors: null
             }
         }
     } catch (error) {
         return {
             props: {
-                shifts: null
+                shifts: null,
+                errors: JSON.parse(JSON.stringify(error)),
             }
         }
     }
