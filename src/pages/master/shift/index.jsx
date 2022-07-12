@@ -1,3 +1,4 @@
+import ErrorHandling from '@/components/ErrorHandling';
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import Login from '@/pages/login';
@@ -37,10 +38,7 @@ export default function ShiftIndex({ shifts, context, errors }) {
         router.push(`/master/shift/${id}`)
     }
     if (errors) {
-        console.log(errors)
-        return <>
-        asd
-        </>
+        return <ErrorHandling errors={errors} />
     }
     return (
         <div style={{ position: 'relative' }}>

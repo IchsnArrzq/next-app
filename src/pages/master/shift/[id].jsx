@@ -34,8 +34,7 @@ export default function ShiftEdit() {
         }
     }
 
-    const Submit = async e => {
-        e.preventDefault()
+    const Submit = async () => {
         setVisible(true)
         try {
             const { data } = await axios.put(`'/api/shift/${id}`, form.values)
@@ -74,7 +73,7 @@ export default function ShiftEdit() {
                         <Title order={5}>last updated {form.values.updated_at}</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

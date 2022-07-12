@@ -1,3 +1,4 @@
+import ErrorHandling from '@/components/ErrorHandling';
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
@@ -6,7 +7,7 @@ import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { Check, X } from 'tabler-icons-react';
 
-export default function MachineIndex({ machines }) {
+export default function MachineIndex({ machines, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
@@ -35,6 +36,9 @@ export default function MachineIndex({ machines }) {
     }
     const Edit = async id => {
         router.push(`/master/machine/${id}`)
+    }
+    if (errors) {
+        return <ErrorHandling errors={errors} />
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -92,12 +96,14 @@ export async function getServerSideProps(context) {
         return {
             props: {
                 machines: data,
+                errors: null,
             }
         }
     } catch (error) {
         return {
             props: {
-                machines: null
+                machines: null,
+                errors: JSON.parse(JSON.stringify(error)),
             }
         }
     }

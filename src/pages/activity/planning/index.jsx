@@ -1,3 +1,4 @@
+import ErrorHandling from '@/components/ErrorHandling'
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
@@ -6,7 +7,7 @@ import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { Check, X } from 'tabler-icons-react'
 
-export default function PlanningIndex({ plannings }) {
+export default function PlanningIndex({ plannings, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
@@ -35,6 +36,9 @@ export default function PlanningIndex({ plannings }) {
     }
     const Edit = async id => {
         router.push(`/activity/planning/${id}`)
+    }
+    if(errors){
+        return <ErrorHandling errors={errors} />
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -104,12 +108,14 @@ export async function getServerSideProps(context) {
         return {
             props: {
                 plannings: data,
+                errors: null,
             }
         }
     } catch (error) {
         return {
             props: {
-                plannings: null
+                plannings: null,
+                errors: JSON.parse(JSON.stringify(error)),
             }
         }
     }

@@ -1,5 +1,5 @@
 import AppLayout from '@/components/Layouts/AppLayout'
-import { Button, Card, Grid, Group, LoadingOverlay, MultiSelect, Stack, TextInput, Title } from '@mantine/core';
+import { Button, Card, Grid, Group, LoadingOverlay, MultiSelect, PasswordInput, Stack, TextInput, Title } from '@mantine/core';
 import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks';
 import { useRouter } from 'next/router';
@@ -16,11 +16,17 @@ export default function UserCreate({ roles }) {
             email: '',
             password: '',
             roles: []
+        },
+        validate: {
+            name:  'asd',
+            email:  'asd',
+            password:  'asd',
+            roles:  'asd',
         }
     })
-    const Submit = async e => {
+
+    const Submit = async () => {
         setVisible(true)
-        e.preventDefault()
         try {
             const { data } = await axios.post('/api/user', form.values)
             showNotification({
@@ -57,7 +63,7 @@ export default function UserCreate({ roles }) {
                         <Title order={5}>Create new User</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
@@ -68,7 +74,7 @@ export default function UserCreate({ roles }) {
                                     <TextInput id="email" type='email' label="email" placeholder='email' {...form.getInputProps('email')} />
                                 </Grid.Col>
                                 <Grid.Col span={5}>
-                                    <TextInput id="password" label="password" placeholder='password' {...form.getInputProps('password')} />
+                                    <PasswordInput id="password" label="password" placeholder='password' {...form.getInputProps('password')} />
                                 </Grid.Col>
                                 <Grid.Col span={5}>
                                     <MultiSelect id="roles" label="roles" searchable data={roles} {...form.getInputProps('roles')} />

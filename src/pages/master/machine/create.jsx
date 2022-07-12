@@ -16,7 +16,7 @@ export default function MachineCreate() {
             number: '',
         }
     })
-    const Submit = async e => {
+    const Submit = async () => {
         setVisible(true)
         e.preventDefault()
         try {
@@ -54,7 +54,7 @@ export default function MachineCreate() {
                         <Title order={5}>Create new Machine</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

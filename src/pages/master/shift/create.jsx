@@ -15,8 +15,7 @@ export default function ShiftCreate() {
             name: ''
         }
     })
-    const Submit = async e => {
-        e.preventDefault()
+    const Submit = async () => {
         setVisible(true)
         try {
             const { data } = await axios.post('/api/shift', form.values)
@@ -52,7 +51,7 @@ export default function ShiftCreate() {
                         <Title order={5}>Create new Shift</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

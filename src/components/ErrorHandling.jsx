@@ -1,14 +1,19 @@
-import { Card, Title } from '@mantine/core'
+import { Card, Code, Group, Text, Title } from '@mantine/core'
+import { Prism } from '@mantine/prism'
 import React from 'react'
 
 export default function ErrorHandling({ errors }) {
-    console.log(errors)
     return (
-        <Card style={{backgroundColor: 'yellow', color: 'black'}}>
-            <Card.Section>
-                <Title order={6}>error</Title>
+        <Card>
+            <Card.Section p={'xl'}>
+                <Group position='apart'>
+                    <Title order={3}>{errors.name}</Title>
+                    <Title order={3}>{errors.message}</Title>
+                </Group>
             </Card.Section>
-            {JSON.stringify(errors)}
+            <Prism withLineNumbers language='json'>
+                {JSON.stringify(errors)}
+            </Prism>
         </Card>
     )
 }

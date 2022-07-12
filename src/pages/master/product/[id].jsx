@@ -39,8 +39,7 @@ export default function ProductEdit({ customers }) {
         setVisible(false)
     }
 
-    const Submit = async e => {
-        e.preventDefault()
+    const Submit = async () => {
         setVisible(true)
         try {
             const { data } = await axios.put(`/api/product/${id}`, form.values)
@@ -84,7 +83,7 @@ export default function ProductEdit({ customers }) {
                         <Title order={5}>last updated {record.updated_at}</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

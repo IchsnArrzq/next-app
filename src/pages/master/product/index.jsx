@@ -5,8 +5,9 @@ import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@
 import { useRouter } from 'next/router'
 import axios from '@/lib/axios'
 import { Check, X } from 'tabler-icons-react';
+import ErrorHandling from '@/components/ErrorHandling';
 
-export default function ProductIndex({ products }) {
+export default function ProductIndex({ products, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
@@ -35,6 +36,9 @@ export default function ProductIndex({ products }) {
     }
     const Edit = async id => {
         router.push(`/master/product/${id}`)
+    }
+    if (errors) {
+        return <ErrorHandling errors={errors} />
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -95,12 +99,14 @@ export async function getServerSideProps(context) {
         return {
             props: {
                 products: data,
+                errors: null,
             }
         }
     } catch (error) {
         return {
             props: {
-                products: null
+                products: null,
+                errors: JSON.parse(JSON.stringify(error)),
             }
         }
     }

@@ -29,9 +29,9 @@ export default function CustomerCreate({ provinces, errors }) {
             remark: '',
         }
     })
-    const Submit = async (e) => {
+    const Submit = async () => {
+        return console.log(form.getInputProps('email'))
         setVisible(true)
-        e.preventDefault()
         try {
             const { data } = await axios.post('/api/customer', form.values)
             showNotification({
@@ -56,28 +56,29 @@ export default function CustomerCreate({ provinces, errors }) {
             setVisible(false)
         }
     }
-    const FindCities = async () => {
-        if (form.values.province) {
+    const FindCities = async (province) => {
+        if (province) {
             try {
+                form.setFieldValue('province', province)
                 setCities([])
-                const { data } = await axios.get(`/api/city/${form.values.province}`)
+                const { data } = await axios.get(`/api/city/${province}`)
                 const cities = data.map((city) => {
                     return {
                         'value': String(city.id),
                         'label': String(city.nama)
                     }
                 })
-                setCities(cities)
+                form.setFieldValue('city', '')
+                setCities([...cities])
             } catch (error) {
-                console.log(error.response.data)
+                console.log(error)
             }
         }
     }
-    if(errors){
+    if (errors) {
         return <ErrorHandling errors={errors} />
     }
     return (
-
         <div style={{ position: 'relative' }}>
             <LoadingOverlay visible={visible} />
             <Card p='xl' shadow="sm">
@@ -89,7 +90,7 @@ export default function CustomerCreate({ provinces, errors }) {
                         <Title order={5}>Create new Customer</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
@@ -120,7 +121,7 @@ export default function CustomerCreate({ provinces, errors }) {
                                     <TextInput required id="no" label="no fax" placeholder='73829479' {...form.getInputProps('number_fax')} />
                                 </Grid.Col>
                                 <Grid.Col md={4} sm={6}>
-                                    <Select onSelect={() => FindCities()} required searchable id="provinces" label="provinces" data={provinces} {...form.getInputProps('province')} />
+                                    <Select required searchable id="provinces" label="provinces" data={provinces} value={form.values.province} onChange={e => FindCities(e)} error={form.errors.province} />
                                 </Grid.Col>
                                 <Grid.Col md={4} sm={6}>
                                     <Select required label="cities" searchable data={cities} {...form.getInputProps('city')} />

@@ -6,8 +6,9 @@ import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { Check, X } from 'tabler-icons-react';
+import ErrorHandling from '@/components/ErrorHandling';
 
-export default function CustomerEdit({ provinces }) {
+export default function CustomerEdit({ provinces, errors }) {
     const router = useRouter()
     const { id } = router.query
     const [visible, setVisible] = useState(false);
@@ -42,9 +43,8 @@ export default function CustomerEdit({ provinces }) {
         setVisible(false)
     }
 
-    const Submit = async e => {
+    const Submit = async () => {
         setVisible(true)
-        e.preventDefault()
         try {
             const { data } = await axios.put(`/api/customer/${id}`, form.values)
             showNotification({
@@ -70,24 +70,26 @@ export default function CustomerEdit({ provinces }) {
             setVisible(false)
         }
     }
-    const FindCities = async () => {
-        if (form.values.province) {
+    const FindCities = async (province) => {
+        if (province) {
             setCities([])
-            const { data } = await axios.get(`/api/city/${form.values.province}`)
+            const { data } = await axios.get(`/api/city/${province}`)
             const cities = data.map((city) => {
                 return {
                     'value': String(city.id),
                     'label': String(city.nama)
                 }
             })
-            setCities(cities)
+            setCities([...cities])
         }
     }
     useEffect(() => {
         Find()
     }, [])
+    if (errors) {
+        return <ErrorHandling errors={errors} />
+    }
     return (
-
         <div style={{ position: 'relative' }}>
             <LoadingOverlay visible={visible} />
             <Card p='xl' shadow="sm">
@@ -99,7 +101,7 @@ export default function CustomerEdit({ provinces }) {
                         <Title order={5}>Edit Customer</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
@@ -130,7 +132,7 @@ export default function CustomerEdit({ provinces }) {
                                     <TextInput required id="no" label="no fax" placeholder='73829479' {...form.getInputProps('number_fax')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
-                                    <Select onSelect={FindCities} required searchable id="provinces" label="provinces" data={provinces} {...form.getInputProps('province')} />
+                                    <Select onSelect={() => FindCities(form.values.province)} required searchable id="provinces" label="provinces" data={provinces} {...form.getInputProps('province')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
                                     <Select required id="cities" label="cities" searchable data={cities} {...form.getInputProps('city')} />
@@ -167,15 +169,32 @@ export default function CustomerEdit({ provinces }) {
     )
 }
 CustomerEdit.getLayout = page => <AppLayout children={page} />
-CustomerEdit.getInitialProps = async () => {
-    const { data } = await axios.get('/api/provinces')
-    const provinces = data.map((province) => {
+export async function getServerSideProps(context) {
+    try {
+        const { data } = await axios.get('/api/provinces', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        const provinces = data.map((province) => {
+            return {
+                'value': String(province.id),
+                'label': String(province.nama)
+            }
+        })
         return {
-            'value': String(province.id),
-            'label': String(province.nama)
+            props: {
+                provinces,
+                errors: null
+            }
         }
-    })
-    return {
-        provinces
+    } catch (error) {
+        return {
+            props: {
+                provinces: null,
+                errors: JSON.parse(JSON.stringify(error))
+            }
+        }
     }
 }

@@ -39,9 +39,8 @@ export default function UserEdit({ roles }) {
         }
     }
 
-    const Submit = async e => {
+    const Submit = async () => {
         setVisible(true)
-        e.preventDefault()
         try {
             const { data } = await axios.put(`/api/user/${id}`, form.values)
             showNotification({
@@ -81,7 +80,7 @@ export default function UserEdit({ roles }) {
                         <Title order={5}>last updated {record.updated_at}</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

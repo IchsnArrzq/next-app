@@ -6,8 +6,9 @@ import axios from '@/lib/axios'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Check, X } from 'tabler-icons-react'
+import ErrorHandling from '@/components/ErrorHandling';
 
-export default function CustomerIndex({ customers }) {
+export default function CustomerIndex({ customers, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
@@ -36,6 +37,9 @@ export default function CustomerIndex({ customers }) {
     }
     const Edit = async id => {
         router.push(`/master/customer/${id}`)
+    }
+    if (errors) {
+        return <ErrorHandling errors={errors} />
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -96,12 +100,14 @@ export async function getServerSideProps(context) {
         return {
             props: {
                 customers: data,
+                errors: null,
             }
         }
     } catch (error) {
         return {
             props: {
-                customers: null
+                customers: null,
+                errors: JSON.parse(JSON.stringify(error)),
             }
         }
     }

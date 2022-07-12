@@ -1,10 +1,11 @@
+import ErrorHandling from '@/components/ErrorHandling'
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import { Badge, Button, Card, Checkbox, Collapse, Grid, Group, Paper, Progress, ScrollArea, Stack, Table, Text, Title } from '@mantine/core'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
-export default function MachineIndex({ machine, time }) {
+export default function MachineIndex({ machine, time, errors }) {
 
     const router = useRouter()
     const [opened, setOpen] = useState(false);
@@ -42,6 +43,9 @@ export default function MachineIndex({ machine, time }) {
             HandleCheck(index)
         })
     }, [])
+    if (errors) {
+        return <ErrorHandling errors={errors} />
+    }
     return (
         <Grid columns={12} gutter="xs">
             {/* content... */}
@@ -219,24 +223,35 @@ export default function MachineIndex({ machine, time }) {
 
 MachineIndex.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
-    const time = await axios.post('/api/times', {
-        hour: 7,
-        minute: 0,
-        second: 0
-    })
-    const machine = await axios.get('/api/machine', {
-        headers: {
-            origin: process.env.ORIGIN,
-            Cookie: context.req.headers.cookie
+    try {
+        const time = await axios.post('/api/times', {
+            hour: 7,
+            minute: 0,
+            second: 0
+        })
+        const machine = await axios.get('/api/machine', {
+            headers: {
+                origin: process.env.ORIGIN,
+                Cookie: context.req.headers.cookie
+            }
+        })
+        for (let index = 0; index < machine.data.length; index++) {
+            machine.data[index].status = false;
         }
-    })
-    for (let index = 0; index < machine.data.length; index++) {
-        machine.data[index].status = false;
-    }
-    return {
-        props: {
-            machine: machine.data,
-            time: time.data,
+        return {
+            props: {
+                machine: machine.data,
+                time: time.data,
+                errors: null,
+            }
+        }
+    } catch (error) {
+        return {
+            props: {
+                machine: null,
+                time: null,
+                errors: JSON.parse(JSON.stringify(error)),
+            }
         }
     }
 }

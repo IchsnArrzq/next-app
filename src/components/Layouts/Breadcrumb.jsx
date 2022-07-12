@@ -1,8 +1,9 @@
-import { Anchor, Breadcrumbs, Card } from '@mantine/core';
+import { ActionIcon, Anchor, Breadcrumbs, Card, Group } from '@mantine/core';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react'
+import { Settings } from 'tabler-icons-react';
 
 export default function Breadcrumb() {
 
@@ -32,9 +33,14 @@ export default function Breadcrumb() {
     return (
         <Card>
             <Head>
-                <title>{process.env.APP_NAME ?? 'Next App'} | { headers.join(' - ')}</title>
+                <title>{process.env.APP_NAME ?? 'Next App'} | {headers.join(' - ')}</title>
             </Head>
-            <Breadcrumbs>{breadcrumbs}</Breadcrumbs>
+            <Group position='apart'>
+                <Breadcrumbs>{breadcrumbs}</Breadcrumbs>
+                <ActionIcon>
+                    <Settings size={16} />
+                </ActionIcon>
+            </Group>
         </Card>
     )
 }

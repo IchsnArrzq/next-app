@@ -24,9 +24,8 @@ export default function Machinemachine() {
         setRecord(data)
     }
 
-    const Submit = async e => {
+    const Submit = async () => {
         setVisible(true)
-        e.preventDefault()
         try {
             const { data } = await axios.put(`/api/machine/${id}`, form.values)
             showNotification({
@@ -65,7 +64,7 @@ export default function Machinemachine() {
                         <Title order={5}>Edit Machine</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit}>
+                <form onSubmit={form.onSubmit(Submit)}>
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>

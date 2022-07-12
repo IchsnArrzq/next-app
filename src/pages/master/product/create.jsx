@@ -28,8 +28,7 @@ export default function ProductCreate({ customers }) {
             dies_lifetime: '',
         }
     })
-    const Submit = async e => {
-        e.preventDefault()
+    const Submit = async () => {
         setVisible(true)
         try {
             const { data } = await axios.post('/api/product', form.values)
@@ -56,7 +55,7 @@ export default function ProductCreate({ customers }) {
         }
     }
     const HandleFileUpload = e => {
-        form.setFieldValue('images', e.target.files[0])
+        form.setFieldValue('images', e.target.files)
     }
     return (
         <div style={{ position: 'relative' }}>
@@ -70,7 +69,7 @@ export default function ProductCreate({ customers }) {
                         <Title order={5}>Create new Product</Title>
                     </Group>
                 </Card.Section>
-                <form onSubmit={Submit} encType="multipart/form-data">
+                <form onSubmit={form.onSubmit(Submit)} encType="multipart/form-data">
                     <Stack spacing="xl">
                         <Group>
                             <Grid grow>
@@ -84,7 +83,7 @@ export default function ProductCreate({ customers }) {
                                     <TextInput id="part_number" label="Part Number" placeholder='part_number' {...form.getInputProps('part_number')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
-                                    <TextInput id="file" label="File" onInput={HandleFileUpload} type='file' />
+                                    <TextInput id="file" multiple label="File" onInput={HandleFileUpload} type='file' />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
                                     <TextInput id="cycle_time" label="Cycle time" placeholder='cycle_time' {...form.getInputProps('cycle_time')} />
