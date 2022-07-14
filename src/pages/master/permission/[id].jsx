@@ -3,7 +3,7 @@ import React from 'react'
 
 export default function PermissionEdit() {
   return (
-    <div></div>
+    <div>edit</div>
   )
 }
 PermissionEdit.getLayout = page => <AppLayout children={page} />

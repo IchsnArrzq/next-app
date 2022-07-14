@@ -76,7 +76,7 @@ export default function PlanningCreate({ products, machines, shifts }) {
                         <Group>
                             <Grid>
                                 <Grid.Col span={3}>
-                                    <DatePicker mode="datetime" is24Hour={true} locale='id' inputFormat="YYYY-MM-DD" labelFormat="YYYY-MM-DD" required id="date" label="date" placeholder='date' {...form.getInputProps('date')} />
+                                    <DatePicker mode="datetime" locale='id' inputFormat="YYYY-MM-DD" labelFormat="YYYY-MM-DD" required id="date" label="date" placeholder='date' {...form.getInputProps('date')} />
                                 </Grid.Col>
                                 <Grid.Col span={3}>
                                     <Select required id="products" label="products" searchable data={products} {...form.getInputProps('product_id')} />

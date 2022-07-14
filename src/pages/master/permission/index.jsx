@@ -43,30 +43,31 @@ export default function PermissionIndex({ permissions }) {
                 <Card.Section p="md">
                     <Group position='apart'>
                         <Title order={5}>Permission List</Title>
-                        <Button variant='filled' onClick={() => router.push('/master/permission/create')}>
-                            create
-                        </Button>
                     </Group>
                 </Card.Section>
                 <Table verticalSpacing="xs" fontSize="xs">
                     <thead>
                         <tr>
                             <th>name</th>
-                            <th>action</th>
+                            <th>roles</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             permissions.map((value, index) => {
-                                console.log(value)
                                 return (
                                     <tr key={value.id}>
                                         <td>{value.name}</td>
                                         <td>
-                                            <Group>
-                                                <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
-                                                <Button color={'red'} id={value.id} onClick={() => Delete(value.id)}>delete</Button>
-                                            </Group>
+                                            <ul>
+                                                {value.roles.map(item => {
+                                                    return (
+                                                        <li key={item.id}>
+                                                            {item.name}
+                                                        </li>
+                                                    )
+                                                })}
+                                            </ul>
                                         </td>
                                     </tr>
                                 )

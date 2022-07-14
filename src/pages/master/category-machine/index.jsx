@@ -8,20 +8,20 @@ import { useRouter } from 'next/router'
 import React, { Fragment, useState } from 'react'
 import { ArrowNarrowDown, ArrowNarrowUp, Check, X } from 'tabler-icons-react';
 
-export default function ShiftIndex({ shifts, context, errors }) {
+export default function CategoryMachineIndex({ categoryMachines, context, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {
         setVisible(true)
         try {
-            const { data } = await axios.delete(`/api/shift/${id}`)
+            const { data } = await axios.delete(`/api/category-machine/${id}`)
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
                 color: 'teal'
             })
-            router.push('/master/shift')
+            router.push('/master/category-machine')
         } catch (error) {
             showNotification({
                 title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -34,7 +34,7 @@ export default function ShiftIndex({ shifts, context, errors }) {
         }
     }
     const Edit = async id => {
-        router.push(`/master/shift/${id}`)
+        router.push(`/master/category-machine/${id}`)
     }
     if (errors) {
         return <ErrorHandling errors={errors} />
@@ -45,8 +45,8 @@ export default function ShiftIndex({ shifts, context, errors }) {
             <Card px='xl' py='xl' shadow="sm">
                 <Card.Section p="md">
                     <Group position='apart'>
-                        <Title order={5}>Shift List</Title>
-                        <Button variant='filled' onClick={() => router.push('/master/shift/create')}>
+                        <Title order={5}>Category Machine List</Title>
+                        <Button variant='filled' onClick={() => router.push('/master/category-machine/create')}>
                             create
                         </Button>
                     </Group>
@@ -65,7 +65,7 @@ export default function ShiftIndex({ shifts, context, errors }) {
                     </thead>
                     <tbody>
                         {
-                            shifts.map((value, index) => {
+                            categoryMachines.map((value, index) => {
                                 return (
                                     <tr key={value.id}>
                                         <td>{index + 1}</td>
@@ -87,10 +87,10 @@ export default function ShiftIndex({ shifts, context, errors }) {
     )
 }
 
-ShiftIndex.getLayout = page => <AppLayout children={page} />
+CategoryMachineIndex.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
     try {
-        const { data } = await axios.get('/api/shift', {
+        const { data } = await axios.get('/api/category-machine', {
             headers: {
                 origin: process.env.ORIGIN,
                 Cookie: context.req.headers.cookie
@@ -98,14 +98,14 @@ export async function getServerSideProps(context) {
         })
         return {
             props: {
-                shifts: data,
+                categoryMachines: data,
                 errors: null
             }
         }
     } catch (error) {
         return {
             props: {
-                shifts: null,
+                categoryMachines: null,
                 errors: JSON.parse(JSON.stringify(error)),
             }
         }

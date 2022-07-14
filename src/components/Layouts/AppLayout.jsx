@@ -23,7 +23,7 @@ import {
     ActionIcon,
 } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
-import { Settings, DoorExit, Users, Accessible, AppWindow, License, MoodHappy, BuildingStore, BuildingFactory2, Clock, DeviceDesktopAnalytics, CalendarStats, LayoutGrid, Server, ChevronLeft, ChevronsLeft } from 'tabler-icons-react';
+import { Settings, DoorExit, Users, Accessible, AppWindow, License, MoodHappy, BuildingStore, BuildingFactory2, Clock, DeviceDesktopAnalytics, CalendarStats, LayoutGrid, Server, ChevronLeft, ChevronsLeft, Building, Engine, Subtask } from 'tabler-icons-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
 import ApplicationLogo from '../ApplicationLogo';
@@ -201,6 +201,57 @@ const AppLayout = ({ children }) => {
                                                         :
                                                         <ThemeIcon color="violet" variant="light">
                                                             <Clock size={14} />
+                                                        </ThemeIcon>
+                                                }
+                                            </UnstyledButton>
+                                            <UnstyledButton style={{ width: '100%' }} onClick={() => router.push('/master/department')}>
+                                                {
+                                                    navbar == 250 ?
+                                                        <Group position='apart'>
+                                                            <Title order={6}>
+                                                                department
+                                                            </Title>
+                                                            <ThemeIcon color="violet" variant="light">
+                                                                <Building size={14} />
+                                                            </ThemeIcon>
+                                                        </Group>
+                                                        :
+                                                        <ThemeIcon color="violet" variant="light">
+                                                            <Building size={14} />
+                                                        </ThemeIcon>
+                                                }
+                                            </UnstyledButton>
+                                            <UnstyledButton style={{ width: '100%' }} onClick={() => router.push('/master/category-machine')}>
+                                                {
+                                                    navbar == 250 ?
+                                                        <Group position='apart'>
+                                                            <Title order={6}>
+                                                                category machine
+                                                            </Title>
+                                                            <ThemeIcon color="violet" variant="light">
+                                                                <Engine size={14} />
+                                                            </ThemeIcon>
+                                                        </Group>
+                                                        :
+                                                        <ThemeIcon color="violet" variant="light">
+                                                            <Engine size={14} />
+                                                        </ThemeIcon>
+                                                }
+                                            </UnstyledButton>
+                                            <UnstyledButton style={{ width: '100%' }} onClick={() => router.push('/master/process-production')}>
+                                                {
+                                                    navbar == 250 ?
+                                                        <Group position='apart'>
+                                                            <Title order={6}>
+                                                                process production
+                                                            </Title>
+                                                            <ThemeIcon color="violet" variant="light">
+                                                                <Subtask size={14} />
+                                                            </ThemeIcon>
+                                                        </Group>
+                                                        :
+                                                        <ThemeIcon color="violet" variant="light">
+                                                            <Subtask size={14} />
                                                         </ThemeIcon>
                                                 }
                                             </UnstyledButton>

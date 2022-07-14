@@ -1,13 +1,13 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
-import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input, LoadingOverlay } from '@mantine/core'
-import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications'; 
+import { Button, Card, Grid, Group, Select, Stack, TextInput, Title, Input, LoadingOverlay, MultiSelect } from '@mantine/core'
+import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import { useForm } from '@mantine/hooks'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { Check, X } from 'tabler-icons-react'
 
-export default function ProductCreate({ customers }) {
+export default function ProductCreate({ customers, process_productions }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const form = useForm({
@@ -15,9 +15,9 @@ export default function ProductCreate({ customers }) {
             customer_id: '',
             part_name: '',
             part_number: '',
-            images: '',
+            images: [],
             cycle_time: '',
-            process: '',
+            process: [],
             type: '',
             unit: '',
             maker: '',
@@ -29,9 +29,36 @@ export default function ProductCreate({ customers }) {
         }
     })
     const Submit = async () => {
+        let formData = new FormData()
+        formData.append('customer_id', form.values.customer_id)
+        formData.append('part_name', form.values.part_name)
+        formData.append('part_number', form.values.part_number)
+        formData.append('cycle_time', form.values.cycle_time)
+        formData.append('type', form.values.type)
+        formData.append('unit', form.values.unit)
+        formData.append('maker', form.values.maker)
+        formData.append('cavity', form.values.cavity)
+        formData.append('machine_rate', form.values.machine_rate)
+        formData.append('welding_length', form.values.welding_length)
+        formData.append('dies', form.values.dies)
+        formData.append('dies_lifetime', form.values.dies_lifetime)
+        if (form.values.images) {
+            for (let i = 0; i < form.values.images.length; i++) {
+                formData.append('images[]', form.values.images[i])
+            }
+        }
+        if (form.values.process) {
+            for (let i = 0; i < form.values.process.length; i++) {
+                formData.append('process[]', form.values.process[i])
+            }
+        }
         setVisible(true)
         try {
-            const { data } = await axios.post('/api/product', form.values)
+            const { data } = await axios.post('/api/product', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
             showNotification({
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
@@ -89,7 +116,7 @@ export default function ProductCreate({ customers }) {
                                     <TextInput id="cycle_time" label="Cycle time" placeholder='cycle_time' {...form.getInputProps('cycle_time')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
-                                    <TextInput id="process" label="Process" placeholder='process' {...form.getInputProps('process')} />
+                                    <MultiSelect id="process" label="Process" searchable data={process_productions} {...form.getInputProps('process')} />
                                 </Grid.Col>
                                 <Grid.Col span={4}>
                                     <TextInput id="type" label="type" placeholder='type' {...form.getInputProps('type')} />
@@ -131,21 +158,35 @@ export default function ProductCreate({ customers }) {
 }
 ProductCreate.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
-    const { data } = await axios.get('/api/customer', {
+    const customer = await axios.get('/api/customer', {
         headers: {
             origin: process.env.ORIGIN,
             Cookie: context.req.headers.cookie
         }
     })
-    const customers = data.map((customer) => {
+    const process_production = await axios.get('/api/process-production', {
+        headers: {
+            origin: process.env.ORIGIN,
+            Cookie: context.req.headers.cookie
+        }
+    })
+
+    const customers = customer.data.map((customer) => {
         return {
             'value': String(customer.id),
             'label': String(`${customer.user.name} - ${customer.alias}`)
         }
     })
+    const process_productions = process_production.data.map((process_production) => {
+        return {
+            'value': String(process_production.id),
+            'label': String(process_production.name)
+        }
+    })
     return {
         props: {
-            customers
+            customers,
+            process_productions
         }
     }
 }

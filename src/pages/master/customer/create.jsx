@@ -30,7 +30,6 @@ export default function CustomerCreate({ provinces, errors }) {
         }
     })
     const Submit = async () => {
-        return console.log(form.getInputProps('email'))
         setVisible(true)
         try {
             const { data } = await axios.post('/api/customer', form.values)

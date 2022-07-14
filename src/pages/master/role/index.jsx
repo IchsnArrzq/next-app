@@ -65,8 +65,7 @@ export default function RoleIndex({ roles }) {
                     <td>{value.guard_name}</td>
                     <td>
                       <Group>
-                        <Button color={'yellow'} id={value.id} onClick={Edit}>edit</Button>
-                        <Button color={'red'} id={value.id} onClick={Delete}>delete</Button>
+                        <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
                       </Group>
                     </td>
                   </tr>
@@ -82,22 +81,22 @@ export default function RoleIndex({ roles }) {
 RoleIndex.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
   try {
-      const { data } = await axios.get('/api/role', {
-          headers: {
-              origin: process.env.ORIGIN,
-              Cookie: context.req.headers.cookie
-          }
-      })
-      return {
-          props: {
-              roles: data,
-          }
+    const { data } = await axios.get('/api/role', {
+      headers: {
+        origin: process.env.ORIGIN,
+        Cookie: context.req.headers.cookie
       }
+    })
+    return {
+      props: {
+        roles: data,
+      }
+    }
   } catch (error) {
-      return {
-          props: {
-              roles: null
-          }
+    return {
+      props: {
+        roles: null
       }
+    }
   }
 }
