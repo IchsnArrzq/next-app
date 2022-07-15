@@ -35,7 +35,7 @@ export default function ProductEdit({ customers, process_productions }) {
         setVisible(true)
         const { data } = await axios.get(`/api/product/${id}/edit`)
         setImages([...data.imageables])
-        form.setFieldValue('customer_id', data.customer_id)
+        form.setFieldValue('customer_id', String(data.customer_id))
         form.setFieldValue('part_name', data.part_name)
         form.setFieldValue('part_number', data.part_number)
         form.setFieldValue('cycle_time', data.cycle_time)
@@ -48,13 +48,13 @@ export default function ProductEdit({ customers, process_productions }) {
         form.setFieldValue('dies', data.dies)
         form.setFieldValue('dies_lifetime', data.dies_lifetime)
         form.setFieldValue('process', data.process_productions.map(item => String(item.id)))
-        form.setFieldValue('customer_id', String(data.customer_id))
         setRecord(data)
         setVisible(false)
     }
 
     const Submit = async () => {
-        let formData = new FormData()
+        const formData = new FormData()
+        formData.append("_method", "put");
         formData.append('customer_id', form.values.customer_id)
         formData.append('part_name', form.values.part_name)
         formData.append('part_number', form.values.part_number)
@@ -79,9 +79,13 @@ export default function ProductEdit({ customers, process_productions }) {
         }
         setVisible(true)
         try {
-            const { data } = await axios.put(`/api/product/${id}`, form.values, {
+            const { data } = await axios.post(`/api/product/${id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
+                },
+                method: 'PUT',
+                onUploadProgress: function (e) {
+                    console.log(Math.round((e.loaded * 100) / e.total))
                 }
             })
             showNotification({
@@ -94,7 +98,6 @@ export default function ProductEdit({ customers, process_productions }) {
                 router.push('/master/product')
             }, 500)
         } catch (error) {
-            console.log(error.response)
             if (error.response) {
                 showNotification({
                     title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
@@ -115,9 +118,8 @@ export default function ProductEdit({ customers, process_productions }) {
     }
     const DeleteImage = async id => {
         axios.delete(`api/imageable/${id}`).then(async () => {
-            const { data } = await axios.get(`/api/product/${id}/edit`)
-            setImages(data.imageables)
-
+            const { data } = await axios.get(`/api/product/${router.query.id}/edit`)
+            setImages([...data.imageables])
         })
     }
     return (
@@ -138,46 +140,46 @@ export default function ProductEdit({ customers, process_productions }) {
                             <Stack spacing="xl">
                                 <Group>
                                     <Grid grow>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <Select id="customer" label="customer" searchable allowDeselect clearable transition="pop-top-left" transitionDuration={80} transitionTimingFunction="ease" data={customers} {...form.getInputProps('customer_id')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="part_name" label="Part Name" placeholder='part_name' {...form.getInputProps('part_name')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="part_number" label="Part Number" placeholder='part_number' {...form.getInputProps('part_number')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="file" multiple label="File" onInput={HandleFileUpload} type='file' />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="cycle_time" label="Cycle time" placeholder='cycle_time' {...form.getInputProps('cycle_time')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <MultiSelect id="process" label="Process" searchable data={process_productions} {...form.getInputProps('process')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="type" label="type" placeholder='type' {...form.getInputProps('type')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="maker" label="Maker" placeholder='maker' {...form.getInputProps('maker')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="unit" label="unit" placeholder='unit' {...form.getInputProps('unit')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="cavity" label="cavity" placeholder='cavity' {...form.getInputProps('cavity')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="machine_rate" label="machine_rate" placeholder='machine_rate' {...form.getInputProps('machine_rate')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="welding_length" label="welding_length" placeholder='welding_length' {...form.getInputProps('welding_length')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="dies" label="dies" placeholder='dies' {...form.getInputProps('dies')} />
                                         </Grid.Col>
-                                        <Grid.Col span={4}>
+                                        <Grid.Col md={4} sm={1}>
                                             <TextInput id="dies_lifetime" label="dies_lifetime" placeholder='dies_lifetime' {...form.getInputProps('dies_lifetime')} />
                                         </Grid.Col>
                                     </Grid>
@@ -192,24 +194,26 @@ export default function ProductEdit({ customers, process_productions }) {
                         </form>
                     </Tabs.Tab>
                     <Tabs.Tab label={`Photo ${images?.length}`} icon={<Photo size={14} />}>
-                        <Group position='center'>
-                            <Grid mb={'md'}>
-                                {
-                                    images?.map(image => {
-                                        return (
-                                            <Grid.Col key={image.id} md={4} sm={1} >
-                                                <div style={{ position: 'relative' }}>
-                                                    <Image src={image.path} alt="product photo" radius={'md'} />
-                                                    <ActionIcon onClick={() => DeleteImage(image.id)} color="red" variant="filled" style={{ position: 'absolute', top: -10, right: -10 }}>
-                                                        <Trash size={16} />
-                                                    </ActionIcon>
-                                                </div>
-                                            </Grid.Col>
-                                        )
-                                    })
-                                }
-                            </Grid>
-                        </Group>
+                        <Grid mb={'md'}>
+                            {
+                                images?.map(image => {
+                                    return (
+                                        <Grid.Col key={image.id} md={4} sm={1}>
+                                            <div style={{ width: '100%', margin: 'auto' }}>
+                                                <Card shadow="sm">
+                                                    <Card.Section>
+                                                        <Image src={image.path} height={160} alt="Norway" />
+                                                    </Card.Section>
+                                                    <Button onClick={() => DeleteImage(image.id)} variant="light" color="red" fullWidth style={{ marginTop: 14 }} rightIcon={<Trash size={16} />}>
+                                                        delete
+                                                    </Button>
+                                                </Card>
+                                            </div>
+                                        </Grid.Col>
+                                    )
+                                })
+                            }
+                        </Grid>
                     </Tabs.Tab>
                 </Tabs>
             </Card>

@@ -1,6 +1,6 @@
 import AppLayout from '@/components/Layouts/AppLayout'
-import React, { useState } from 'react'
-import { Button, Card, Group, LoadingOverlay, Table, Title } from '@mantine/core'
+import React, { useEffect, useState } from 'react'
+import { Button, Card, Group, LoadingOverlay, Table, TextInput, Title } from '@mantine/core'
 import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
 import axios from '@/lib/axios'
 import { useRouter } from 'next/router'
@@ -10,6 +10,9 @@ import ErrorHandling from '@/components/ErrorHandling';
 export default function UserIndex({ users, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
+    const [filters, setFilters] = useState({
+        search: ''
+    });
     const Delete = async id => {
         setVisible(true)
         try {
@@ -40,6 +43,17 @@ export default function UserIndex({ users, errors }) {
     if (errors) {
         return <ErrorHandling errors={errors} />
     }
+    useEffect(() => {
+        setTimeout(() => {
+            (async (filters) => {
+                const data = await axios.post('/api/searchable', {
+                    model: String("\App\Model\User"),
+                    filters
+                })
+                console.log(data)
+            })(filters)
+        }, 1000)
+    }, [filters]);
     return (
         <div style={{ position: 'relative' }}>
             <LoadingOverlay visible={visible} />
@@ -50,6 +64,12 @@ export default function UserIndex({ users, errors }) {
                         <Button variant='filled' onClick={() => router.push('/master/user/create')}>
                             create
                         </Button>
+                    </Group>
+                </Card.Section>
+                <Card.Section p="md">
+                    <Group position='right'>
+                        {filters.search}
+                        <TextInput label='search' value={filters.search} onInput={e => setFilters({ ...filters, search: e.target.value })} />
                     </Group>
                 </Card.Section>
                 <Table verticalSpacing="xs" fontSize="xs">
