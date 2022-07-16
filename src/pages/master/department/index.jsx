@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 import React, { Fragment, useState } from 'react'
 import { ArrowNarrowDown, ArrowNarrowUp, Check, X } from 'tabler-icons-react';
 
-export default function DepartmentIndex({ departments, context, errors }) {
+export default function DepartmentIndex({ departments, errors }) {
     const router = useRouter()
     const [visible, setVisible] = useState(false);
     const Delete = async id => {

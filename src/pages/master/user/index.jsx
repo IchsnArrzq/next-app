@@ -1,18 +1,32 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Group, LoadingOverlay, Table, TextInput, Title } from '@mantine/core'
-import { showNotification, cleanNotificationsQueue, cleanNotifications } from '@mantine/notifications';
+import {
+    Button,
+    Card,
+    Group,
+    LoadingOverlay,
+    Table,
+    TextInput,
+    Title,
+} from '@mantine/core'
+import {
+    showNotification,
+    cleanNotificationsQueue,
+    cleanNotifications,
+} from '@mantine/notifications'
 import axios from '@/lib/axios'
 import { useRouter } from 'next/router'
-import { Check, X } from 'tabler-icons-react';
-import ErrorHandling from '@/components/ErrorHandling';
+import { Check, X } from 'tabler-icons-react'
+import ErrorHandling from '@/components/ErrorHandling'
 
 export default function UserIndex({ users, errors }) {
     const router = useRouter()
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(false)
     const [filters, setFilters] = useState({
-        search: ''
-    });
+        search: '',
+        with: ['roles'],
+    })
+    const [rows, setRows] = useState([])
     const Delete = async id => {
         setVisible(true)
         try {
@@ -21,17 +35,19 @@ export default function UserIndex({ users, errors }) {
                 title: data.title ?? 'success',
                 message: data.message ?? 'success',
                 icon: <Check />,
-                color: 'teal'
+                color: 'teal',
             })
             setTimeout(() => {
                 router.push('/master/user')
             }, 500)
         } catch (error) {
             showNotification({
-                title: `${error.response.statusText ?? 'error'} ${error.response.status ?? 500}`,
+                title: `${error.response.statusText ?? 'error'} ${
+                    error.response.status ?? 500
+                }`,
                 message: `${error.response.data.message ?? 'error'}`,
                 icon: <X />,
-                color: 'red'
+                color: 'red',
             })
         } finally {
             setVisible(false)
@@ -44,32 +60,123 @@ export default function UserIndex({ users, errors }) {
         return <ErrorHandling errors={errors} />
     }
     useEffect(() => {
+        ;(users => {
+            setRows(
+                users.map((value, index) => {
+                    return (
+                        <tr key={value.id}>
+                            <td>{value.name}</td>
+                            <td>{value.email}</td>
+                            <td>
+                                <ul>
+                                    {value.roles.map((role, id) => {
+                                        return (
+                                            <li key={role.id}>{role.name}</li>
+                                        )
+                                    })}
+                                </ul>
+                            </td>
+                            <td>
+                                <Group>
+                                    <Button
+                                        color={'yellow'}
+                                        id={value.id}
+                                        onClick={() => Edit(value.id)}>
+                                        edit
+                                    </Button>
+                                    <Button
+                                        color={'red'}
+                                        id={value.id}
+                                        onClick={() => Delete(value.id)}>
+                                        delete
+                                    </Button>
+                                </Group>
+                            </td>
+                        </tr>
+                    )
+                }),
+            )
+        })(users)
+    }, [users])
+    useEffect(() => {
         setTimeout(() => {
-            (async (filters) => {
-                const data = await axios.post('/api/searchable', {
-                    model: String("\App\Model\User"),
-                    filters
-                })
-                console.log(data)
+            ;(async filters => {
+                try {
+                    const { data } = await axios.post('/api/searchable', {
+                        model: 'User',
+                        filters,
+                    })
+                    setRows(
+                        data.map((value, index) => {
+                            return (
+                                <tr key={value.id}>
+                                    <td>{value.name}</td>
+                                    <td>{value.email}</td>
+                                    <td>
+                                        <ul>
+                                            {value.roles.map((role, id) => {
+                                                return (
+                                                    <li key={role.id}>
+                                                        {role.name}
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <Group>
+                                            <Button
+                                                color={'yellow'}
+                                                id={value.id}
+                                                onClick={() => Edit(value.id)}>
+                                                edit
+                                            </Button>
+                                            <Button
+                                                color={'red'}
+                                                id={value.id}
+                                                onClick={() =>
+                                                    Delete(value.id)
+                                                }>
+                                                delete
+                                            </Button>
+                                        </Group>
+                                    </td>
+                                </tr>
+                            )
+                        }),
+                    )
+                } catch (error) {
+                    console.log(error)
+                }
             })(filters)
         }, 1000)
-    }, [filters]);
+    }, [filters])
     return (
         <div style={{ position: 'relative' }}>
             <LoadingOverlay visible={visible} />
-            <Card px='xl' py='xl' shadow="sm">
+            <Card px="xl" py="xl" shadow="sm">
                 <Card.Section p="md">
-                    <Group position='apart'>
+                    <Group position="apart">
                         <Title order={5}>User List</Title>
-                        <Button variant='filled' onClick={() => router.push('/master/user/create')}>
+                        <Button
+                            variant="filled"
+                            onClick={() => router.push('/master/user/create')}>
                             create
                         </Button>
                     </Group>
                 </Card.Section>
                 <Card.Section p="md">
-                    <Group position='right'>
-                        {filters.search}
-                        <TextInput label='search' value={filters.search} onInput={e => setFilters({ ...filters, search: e.target.value })} />
+                    <Group position="right">
+                        <TextInput
+                            label="search"
+                            value={filters.search}
+                            onInput={e =>
+                                setFilters({
+                                    ...filters,
+                                    search: e.target.value,
+                                })
+                            }
+                        />
                     </Group>
                 </Card.Section>
                 <Table verticalSpacing="xs" fontSize="xs">
@@ -81,34 +188,7 @@ export default function UserIndex({ users, errors }) {
                             <th>action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {
-                            users.map((value, index) => {
-                                return (
-                                    <tr key={value.id}>
-                                        <td>{value.name}</td>
-                                        <td>{value.email}</td>
-                                        <td>
-                                            <ul>
-
-                                                {value.roles.map((role, id) => {
-                                                    return (
-                                                        <li key={role.id}>{role.name}</li>
-                                                    )
-                                                })}
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <Group>
-                                                <Button color={'yellow'} id={value.id} onClick={() => Edit(value.id)}>edit</Button>
-                                                <Button color={'red'} id={value.id} onClick={() => Delete(value.id)}>delete</Button>
-                                            </Group>
-                                        </td>
-                                    </tr>
-                                )
-                            })
-                        }
-                    </tbody>
+                    <tbody>{rows}</tbody>
                 </Table>
             </Card>
         </div>
@@ -121,21 +201,21 @@ export async function getServerSideProps(context) {
         const { data } = await axios.get('/api/user', {
             headers: {
                 origin: process.env.ORIGIN,
-                Cookie: context.req.headers.cookie
-            }
+                Cookie: context.req.headers.cookie,
+            },
         })
         return {
             props: {
                 users: data,
-                errors: null
-            }
+                errors: null,
+            },
         }
     } catch (error) {
         return {
             props: {
                 users: null,
-                errors: JSON.parse(JSON.stringify(error))
-            }
+                errors: JSON.parse(JSON.stringify(error)),
+            },
         }
     }
 }
