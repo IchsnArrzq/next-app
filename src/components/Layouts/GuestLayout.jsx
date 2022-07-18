@@ -1,7 +1,8 @@
+import { Container } from '@mantine/core'
 import Head from 'next/head'
-import 'tailwindcss/tailwind.css'
 
 const GuestLayout = ({ children }) => {
+    return <Container>{children}</Container>
     return (
         <div>
             <Head>

@@ -1,16 +1,17 @@
-const AuthValidationErrors = ({ errors = [], ...props }) => (
+import { List, Text, Title } from '@mantine/core'
+
+const AuthValidationErrors = ({ errors = [] }) => (
     <>
         {errors.length > 0 && (
-            <div {...props}>
-                <div className="font-medium text-red-600">
+            <div>
+                <Title order={6} color="red">
                     Whoops! Something went wrong.
-                </div>
-
-                <ul className="mt-3 list-disc list-inside text-sm text-red-600">
+                </Title>
+                <List size={'xs'}>
                     {errors.map(error => (
-                        <li key={error}>{error}</li>
+                        <List.Item key={error}>{error}</List.Item>
                     ))}
-                </ul>
+                </List>
             </div>
         )}
     </>
