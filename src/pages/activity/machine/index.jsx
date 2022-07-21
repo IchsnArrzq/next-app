@@ -18,16 +18,14 @@ import {
   Text,
   Title,
 } from '@mantine/core'
-import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 
 export default function MachineIndex({ machine, time, errors }) {
-  const router = useRouter()
   const [opened, setOpen] = useState(false)
-  const [machines, setMachines] = useState(machine)
+  const [machines, setMachines] = useState([])
   const [planningMachines, setPlanningMachines] = useState([])
   const HandleCheck = async index => {
-    machines[index].status = machines[index].status ? false : true
+    machines[index].show = machines[index].show ? false : true
     if (machines[index]) {
       const { data } = await axios.post('/api/monitor', {
         hour: 7,
@@ -44,7 +42,7 @@ export default function MachineIndex({ machine, time, errors }) {
     const interval = setInterval(() => {
       console.log('start')
       machines.forEach(async (item, index) => {
-        if (item.status) {
+        if (item.show) {
           const { data } = await axios.post('/api/monitor', {
             hour: 7,
             minute: 0,
@@ -65,8 +63,11 @@ export default function MachineIndex({ machine, time, errors }) {
   if (errors) {
     return <ErrorHandling errors={errors} />
   }
+  useEffect(() => {
+    setMachines(machine.map(value => ({ ...value, show: true })))
+  }, [])
   return (
-    <Grid columns={12} gutter="xs">
+    <Grid columns={12} gu tter="xs">
       {/* content... */}
 
       <Grid.Col span={opened ? 3 : 1.5}>
@@ -90,7 +91,7 @@ export default function MachineIndex({ machine, time, errors }) {
                           <td>
                             <Checkbox
                               id={index}
-                              checked={machines[index].status}
+                              checked={machines[index].show}
                               onChange={() => HandleCheck(index)}
                             />
                           </td>
@@ -125,7 +126,7 @@ export default function MachineIndex({ machine, time, errors }) {
           <Card p={'xs'}>
             <Stack>
               {machines
-                .filter(machine => machine.status == true)
+                .filter(machine => machine.show == true)
                 .map((item, key) => {
                   return (
                     <div key={key}>
@@ -326,9 +327,6 @@ export async function getServerSideProps(context) {
         Cookie: context.req.headers.cookie,
       },
     })
-    for (let index = 0; index < machine.data.length; index++) {
-      machine.data[index].status = false
-    }
     return {
       props: {
         machine: machine.data,
