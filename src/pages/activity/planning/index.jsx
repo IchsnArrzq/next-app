@@ -2,10 +2,13 @@ import ErrorHandling from '@/components/ErrorHandling'
 import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import {
+  Alert,
   Button,
   Card,
+  Center,
   Group,
   LoadingOverlay,
+  Pagination,
   Table,
   TextInput,
   Title,
@@ -13,17 +16,18 @@ import {
 import { showNotification } from '@mantine/notifications'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
-import { Check, X } from 'tabler-icons-react'
+import { AlertCircle, Check, X } from 'tabler-icons-react'
 
 export default function PlanningIndex({ plannings, errors }) {
   const router = useRouter()
   const [visible, setVisible] = useState(false)
+  const [pagination, setPagination] = useState({})
   const [filters, setFilters] = useState({
     search: '',
     with: ['product', 'machine', 'shift', 'product.customer'],
   })
   const [rows, setRows] = useState([])
-  const Delete = async id => {
+  const Delete = async (id, page) => {
     setVisible(true)
     try {
       const { data } = await axios.delete(`/api/planning/${id}`)
@@ -33,9 +37,60 @@ export default function PlanningIndex({ plannings, errors }) {
         icon: <Check />,
         color: 'teal',
       })
-      setTimeout(() => {
-        router.push('/activity/planning')
-      }, 500)
+
+      axios
+        .get(`/api/planning?page=${page}`)
+        .then(({ data }) => {
+          setPagination({
+            ...data,
+          })
+          setRows(
+            data.data.map(value => {
+              return (
+                <tr key={value.id}>
+                  <td>{value.machine.name}</td>
+                  <td>{value.product.part_name}</td>
+                  <td>{value.qty_planning}</td>
+                  <td>{value.shift.name}</td>
+                  <td>{value.datetimein}</td>
+                  <td>{value.datetimeout}</td>
+                  <td>{value.total}</td>
+                  <td>
+                    <Group>
+                      <Button
+                        color={'yellow'}
+                        id={value.id}
+                        onClick={() => Edit(value.id)}>
+                        edit
+                      </Button>
+                      <Button
+                        color={'red'}
+                        id={value.id}
+                        onClick={() => Delete(value.id, page)}>
+                        delete
+                      </Button>
+                    </Group>
+                  </td>
+                </tr>
+              )
+            }),
+          )
+        })
+        .catch(error => {
+          if (error.response) {
+            showNotification({
+              title: `${error.response.statusText ?? 'error'} ${
+                error.response.status ?? 500
+              }`,
+              message: `${error.response.data.message ?? 'error'}`,
+              icon: <X />,
+              color: 'red',
+            })
+          }
+        })
+        .finally(() => {
+          setVisible(false)
+        })
     } catch (error) {
       showNotification({
         title: `${error.response.statusText ?? 'error'} ${
@@ -56,88 +111,41 @@ export default function PlanningIndex({ plannings, errors }) {
     return <ErrorHandling errors={errors} />
   }
   useEffect(() => {
-    ;(plannings => {
-      setRows(
-        plannings.map((value, index) => {
-          return (
-            <tr key={value.id}>
-              <td>{value.machine.name}</td>
-              <td>{value.product.part_name}</td>
-              <td>{value.qty_planning}</td>
-              <td>{value.shift.name}</td>
-              <td>{value.datetimein}</td>
-              <td>{value.datetimeout}</td>
-              <td>{value.total}</td>
-              <td>
-                <Group>
-                  <Button
-                    color={'yellow'}
-                    id={value.id}
-                    onClick={() => Edit(value.id)}>
-                    edit
-                  </Button>
-                  <Button
-                    color={'red'}
-                    id={value.id}
-                    onClick={() => Delete(value.id)}>
-                    delete
-                  </Button>
-                </Group>
-              </td>
-            </tr>
-          )
-        }),
-      )
-    })(plannings)
-  }, [plannings])
-  useEffect(() => {
-    let timeOut = setTimeout(() => {
-      ;(async filters => {
-        try {
-          const { data } = await axios.post('/api/searchable', {
-            model: 'PlanningMachine',
-            filters,
-          })
-          console.log(data)
-        //   setRows(
-        //     data.map((value, index) => {
-        //       return (
-        //         <tr key={value.id}>
-        //           <td>{value.machine.name}</td>
-        //           <td>{value.product.part_name}</td>
-        //           <td>{value.qty_planning}</td>
-        //           <td>{value.shift.name}</td>
-        //           <td>{value.datetimein}</td>
-        //           <td>{value.datetimeout}</td>
-        //           <td>{value.total}</td>
-        //           <td>
-        //             <Group>
-        //               <Button
-        //                 color={'yellow'}
-        //                 id={value.id}
-        //                 onClick={() => Edit(value.id)}>
-        //                 edit
-        //               </Button>
-        //               <Button
-        //                 color={'red'}
-        //                 id={value.id}
-        //                 onClick={() => Delete(value.id)}>
-        //                 delete
-        //               </Button>
-        //             </Group>
-        //           </td>
-        //         </tr>
-        //       )
-        //     }),
-        //   )
-        } catch (error) {
-          console.log(error)
-        }
-      })(filters)
-    }, 500)
-
-    return () => clearTimeout(timeOut)
-  }, [filters])
+    setPagination({
+      ...plannings,
+    })
+    setRows(
+      plannings.data.map(value => {
+        return (
+          <tr key={value.id}>
+            <td>{value.machine.name}</td>
+            <td>{value.product.part_name}</td>
+            <td>{value.qty_planning}</td>
+            <td>{value.shift.name}</td>
+            <td>{value.datetimein}</td>
+            <td>{value.datetimeout}</td>
+            <td>{value.total}</td>
+            <td>
+              <Group>
+                <Button
+                  color={'yellow'}
+                  id={value.id}
+                  onClick={() => Edit(value.id)}>
+                  edit
+                </Button>
+                <Button
+                  color={'red'}
+                  id={value.id}
+                  onClick={() => Delete(value.id, plannings.current_page)}>
+                  delete
+                </Button>
+              </Group>
+            </td>
+          </tr>
+        )
+      }),
+    )
+  }, [])
   return (
     <div style={{ position: 'relative' }}>
       <LoadingOverlay visible={visible} />
@@ -153,20 +161,69 @@ export default function PlanningIndex({ plannings, errors }) {
           </Group>
         </Card.Section>
         <Card.Section p="md">
-          <Group position="right">
+          <Group position="left">
             <TextInput
               label="search"
               value={filters.search}
-              onInput={e =>
+              onChange={e => {
                 setFilters({
                   ...filters,
                   search: e.target.value,
                 })
-              }
+                axios
+                  .post('/api/searchable?page=1', {
+                    model: 'PlanningMachine',
+                    filters: {
+                      search: e.target.value,
+                      with: filters.with,
+                    },
+                  })
+                  .then(({ data }) => {
+                    setPagination({
+                      ...data,
+                    })
+                    setRows(
+                      data.data.map(value => {
+                        return (
+                          <tr key={value.id}>
+                            <td>{value.machine.name}</td>
+                            <td>{value.product.part_name}</td>
+                            <td>{value.qty_planning}</td>
+                            <td>{value.shift.name}</td>
+                            <td>{value.datetimein}</td>
+                            <td>{value.datetimeout}</td>
+                            <td>{value.total}</td>
+                            <td>
+                              <Group>
+                                <Button
+                                  color={'yellow'}
+                                  id={value.id}
+                                  onClick={() => Edit(value.id)}>
+                                  edit
+                                </Button>
+                                <Button
+                                  color={'red'}
+                                  id={value.id}
+                                  onClick={() =>
+                                    Delete(value.id, plannings.current_page)
+                                  }>
+                                  delete
+                                </Button>
+                              </Group>
+                            </td>
+                          </tr>
+                        )
+                      }),
+                    )
+                  })
+                  .catch(error => {
+                    console.log(error)
+                  })
+              }}
             />
           </Group>
         </Card.Section>
-        <Table verticalSpacing="xs" fontSize="xs">
+        <Table highlightOnHover verticalSpacing="xs" fontSize="xs">
           <thead>
             <tr>
               <th>machine</th>
@@ -179,7 +236,101 @@ export default function PlanningIndex({ plannings, errors }) {
               <th>action</th>
             </tr>
           </thead>
-          <tbody>{rows}</tbody>
+          <tbody>
+            {rows.length != 0 ? (
+              rows
+            ) : (
+              <tr>
+                <td colSpan={'100%'}>
+                  {' '}
+                  <Alert
+                    icon={<AlertCircle size={16} />}
+                    title="Oops!"
+                    color="yellow">
+                    no data displayed
+                  </Alert>
+                </td>
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={'100%'}>
+                <Center>
+                  <Pagination
+                    page={pagination.current_page}
+                    onChange={page => {
+                      setPagination({
+                        ...pagination,
+                      })
+                      if (page != pagination.current_page) {
+                        setVisible(true)
+                        axios
+                          .get(`/api/planning?page=${page}`)
+                          .then(({ data }) => {
+                            setPagination({
+                              ...data,
+                            })
+                            setRows(
+                              data.data.map(value => {
+                                return (
+                                  <tr key={value.id}>
+                                    <td>{value.machine.name}</td>
+                                    <td>{value.product.part_name}</td>
+                                    <td>{value.qty_planning}</td>
+                                    <td>{value.shift.name}</td>
+                                    <td>{value.datetimein}</td>
+                                    <td>{value.datetimeout}</td>
+                                    <td>{value.total}</td>
+                                    <td>
+                                      <Group>
+                                        <Button
+                                          color={'yellow'}
+                                          id={value.id}
+                                          onClick={() => Edit(value.id)}>
+                                          edit
+                                        </Button>
+                                        <Button
+                                          color={'red'}
+                                          id={value.id}
+                                          onClick={() =>
+                                            Delete(value.id, page)
+                                          }>
+                                          delete
+                                        </Button>
+                                      </Group>
+                                    </td>
+                                  </tr>
+                                )
+                              }),
+                            )
+                          })
+                          .catch(error => {
+                            if (error.response) {
+                              showNotification({
+                                title: `${
+                                  error.response.statusText ?? 'error'
+                                } ${error.response.status ?? 500}`,
+                                message: `${
+                                  error.response.data.message ?? 'error'
+                                }`,
+                                icon: <X />,
+                                color: 'red',
+                              })
+                            }
+                          })
+                          .finally(() => {
+                            setVisible(false)
+                          })
+                      }
+                    }}
+                    total={pagination.last_page}
+                    boundaries={3}
+                  />
+                </Center>
+              </td>
+            </tr>
+          </tfoot>
         </Table>
       </Card>
     </div>
@@ -189,7 +340,7 @@ export default function PlanningIndex({ plannings, errors }) {
 PlanningIndex.getLayout = page => <AppLayout children={page} />
 export async function getServerSideProps(context) {
   try {
-    const { data } = await axios.get('/api/planning', {
+    const { data } = await axios.get('/api/planning?page=1', {
       headers: {
         origin: process.env.ORIGIN,
         Cookie: context.req.headers.cookie,

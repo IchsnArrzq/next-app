@@ -1,6 +1,7 @@
 import AppLayout from '@/components/Layouts/AppLayout'
 import React, { useEffect, useState } from 'react'
 import {
+  Alert,
   Button,
   Card,
   Center,
@@ -18,7 +19,7 @@ import {
 } from '@mantine/notifications'
 import axios from '@/lib/axios'
 import { useRouter } from 'next/router'
-import { Check, X } from 'tabler-icons-react'
+import { AlertCircle, Check, Search, X } from 'tabler-icons-react'
 import ErrorHandling from '@/components/ErrorHandling'
 
 export default function UserIndex({ users, errors }) {
@@ -28,9 +29,40 @@ export default function UserIndex({ users, errors }) {
   const [pagination, setPagination] = useState({})
   const [filters, setFilters] = useState({
     search: '',
-    with: [],
+    with: ['roles'],
   })
-  const Delete = async id => {
+  const getRows = (value, page = pagination.current_page) => {
+    return (
+      <tr key={value.id}>
+        <td>{value.name}</td>
+        <td>{value.email}</td>
+        <td>
+          <ul>
+            {value?.roles?.map(role => {
+              return <li key={role.id}>{role.name}</li>
+            })}
+          </ul>
+        </td>
+        <td>
+          <Group>
+            <Button
+              color={'yellow'}
+              id={value.id}
+              onClick={() => Edit(value.id)}>
+              edit
+            </Button>
+            <Button
+              color={'red'}
+              id={value.id}
+              onClick={() => Delete(value.id, page)}>
+              delete
+            </Button>
+          </Group>
+        </td>
+      </tr>
+    )
+  }
+  const Delete = async (id, page) => {
     setVisible(true)
     try {
       const { data } = await axios.delete(`/api/user/${id}`)
@@ -40,102 +72,49 @@ export default function UserIndex({ users, errors }) {
         icon: <Check />,
         color: 'teal',
       })
-      axios
-        .get(`/api/user?page=${pagination.current_page}`)
-        .then(({ data }) => {
-          setPagination({
-            ...data,
-          })
-          setRows(
-            data.data.map((value, index) => {
-              return (
-                <tr key={value.id}>
-                  <td>{value.name}</td>
-                  <td>{value.email}</td>
-                  <td>
-                    <ul>
-                      {value.roles.map((role, id) => {
-                        return <li key={role.id}>{role.name}</li>
-                      })}
-                    </ul>
-                  </td>
-                  <td>
-                    <Group>
-                      <Button
-                        color={'yellow'}
-                        id={value.id}
-                        onClick={() => Edit(value.id)}>
-                        edit
-                      </Button>
-                      <Button
-                        color={'red'}
-                        id={value.id}
-                        onClick={() => Delete(value.id)}>
-                        delete
-                      </Button>
-                    </Group>
-                  </td>
-                </tr>
-              )
-            }),
-          )
+      if (filters.search == '') {
+        await axios.get(`/api/user?page=${page}`).then(({ data }) => {
+          setPagination({ ...data })
+          setRows(data.data.map(value => getRows(value)))
         })
+      } else {
+        await axios
+          .post(`/api/searchable?page=${page}`, {
+            model: 'User',
+            filters: {
+              search: filters.search,
+              with: filters.with,
+            },
+          })
+          .then(({ data }) => {
+            setPagination({ ...data })
+            setRows(data.data.map(value => getRows(value, page)))
+          })
+      }
     } catch (error) {
-      showNotification({
-        title: `${error.response.statusText ?? 'error'} ${
-          error.response.status ?? 500
-        }`,
-        message: `${error.response.data.message ?? 'error'}`,
-        icon: <X />,
-        color: 'red',
-      })
+      if (error.response) {
+        showNotification({
+          title: `${error.response.statusText ?? 'error'} ${
+            error.response.status ?? 500
+          }`,
+          message: `${error.response.data.message ?? 'error'}`,
+          icon: <X />,
+          color: 'red',
+        })
+      }
     } finally {
       setVisible(false)
     }
   }
-  const Edit = async id => {
+  const Edit = id => {
     router.push(`/master/user/${id}`)
   }
   if (errors) {
     return <ErrorHandling errors={errors} />
   }
   useEffect(() => {
-    setPagination({
-      ...users,
-    })
-    setRows(
-      users.data.map((value, index) => {
-        return (
-          <tr key={value.id}>
-            <td>{value.name}</td>
-            <td>{value.email}</td>
-            <td>
-              <ul>
-                {value.roles.map((role, id) => {
-                  return <li key={role.id}>{role.name}</li>
-                })}
-              </ul>
-            </td>
-            <td>
-              <Group>
-                <Button
-                  color={'yellow'}
-                  id={value.id}
-                  onClick={() => Edit(value.id)}>
-                  edit
-                </Button>
-                <Button
-                  color={'red'}
-                  id={value.id}
-                  onClick={() => Delete(value.id)}>
-                  delete
-                </Button>
-              </Group>
-            </td>
-          </tr>
-        )
-      }),
-    )
+    setPagination({ ...users })
+    setRows(users.data.map(value => getRows(value)))
   }, [])
   return (
     <div style={{ position: 'relative' }}>
@@ -151,8 +130,46 @@ export default function UserIndex({ users, errors }) {
             </Button>
           </Group>
         </Card.Section>
-        {pagination.current_page}
-        <Table verticalSpacing="xs" fontSize="xs">
+        <Card.Section p="md">
+          <Group position="left">
+            <TextInput
+              label="search"
+              value={filters.search}
+              onChange={e => {
+                setFilters({
+                  ...filters,
+                  search: e.target.value,
+                })
+                axios
+                  .post('/api/searchable?page=1', {
+                    model: 'User',
+                    filters: {
+                      search: e.target.value,
+                      with: filters.with,
+                    },
+                  })
+                  .then(({ data }) => {
+                    setPagination({ ...data })
+                    setRows(data.data.map(value => getRows(value)))
+                  })
+                  .catch(error => {
+                    if (error.response) {
+                      showNotification({
+                        title: `${error.response.statusText ?? 'error'} ${
+                          error.response.status ?? 500
+                        }`,
+                        message: `${error.response.data.message ?? 'error'}`,
+                        icon: <X />,
+                        color: 'red',
+                      })
+                    }
+                  })
+              }}
+              rightSection={<Search size={14} />}
+            />
+          </Group>
+        </Card.Section>
+        <Table highlightOnHover verticalSpacing="xs" fontSize="xs">
           <thead>
             <tr>
               <th>name</th>
@@ -161,71 +178,110 @@ export default function UserIndex({ users, errors }) {
               <th>action</th>
             </tr>
           </thead>
-          <tbody>{rows}</tbody>
+          <tbody>
+            {rows.length != 0 ? (
+              rows
+            ) : (
+              <tr>
+                <td colSpan={'100%'}>
+                  {' '}
+                  <Alert
+                    icon={<AlertCircle size={16} />}
+                    title="Oops!"
+                    color="yellow">
+                    no data displayed
+                  </Alert>
+                </td>
+              </tr>
+            )}
+          </tbody>
           <tfoot>
             <tr>
               <td colSpan={'100%'}>
                 <Center>
-                  <Pagination
-                    page={pagination.current_page}
-                    total={pagination.last_page}
-                    boundaries={3}
-                    onChange={async page => {
-                      if (page != pagination.current_page) {
-                        setVisible(true)
-                        axios
-                          .get(`/api/user?page=${page}`)
-                          .then(({ data }) => {
-                            setPagination({
-                              ...data,
+                  {filters.search == '' ? (
+                    <Pagination
+                      page={pagination.current_page}
+                      total={pagination.last_page}
+                      boundaries={3}
+                      onChange={page => {
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .get(`/api/user?page=${page}`)
+                            .then(({ data }) => {
+                              setPagination({ ...data })
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
                             })
-                            setRows(
-                              data.data.map((value, index) => {
-                                return (
-                                  <tr key={value.id}>
-                                    <td>{value.id}</td>
-                                    <td>{value.name}</td>
-                                    <td>
-                                      <Group>
-                                        <Button
-                                          color={'yellow'}
-                                          id={value.id}
-                                          onClick={() => Edit(value.id)}>
-                                          edit
-                                        </Button>
-                                        <Button
-                                          color={'red'}
-                                          id={value.id}
-                                          onClick={() => Delete(value.id)}>
-                                          delete
-                                        </Button>
-                                      </Group>
-                                    </td>
-                                  </tr>
-                                )
-                              }),
-                            )
-                          })
-                          .catch(error => {
-                            if (error.response) {
-                              showNotification({
-                                title: `${
-                                  error.response.statusText ?? 'error'
-                                } ${error.response.status ?? 500}`,
-                                message: `${
-                                  error.response.data.message ?? 'error'
-                                }`,
-                                icon: <X />,
-                                color: 'red',
-                              })
-                            }
-                          })
-                          .finally(() => {
-                            setVisible(false)
-                          })
-                      }
-                    }}
-                  />
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Pagination
+                      page={pagination.current_page}
+                      total={pagination.last_page}
+                      boundaries={3}
+                      onChange={page => {
+                        setPagination({
+                          ...pagination,
+                          current_page: page,
+                        })
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .post(`/api/searchable?page=${page}`, {
+                              model: 'User',
+                              filters: {
+                                search: filters.search,
+                                with: filters.with,
+                              },
+                            })
+                            .then(({ data }) => {
+                              setPagination({ ...data })
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
+                            })
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                    />
+                  )}
                 </Center>
               </td>
             </tr>

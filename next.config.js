@@ -1,9 +1,9 @@
 module.exports = {
     env: {
-        ORIGIN: '192.168.0.111',
+        ORIGIN: 'localhost',
         APP_NAME: 'NKP'
     },
     images: {
-        domains: ['192.168.0.111'],
+        domains: ['localhost'],
     },
 }

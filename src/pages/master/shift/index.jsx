@@ -41,7 +41,30 @@ export default function ShiftIndex({ shifts, context, errors }) {
     search: '',
     with: [],
   })
-  const Delete = async id => {
+  const getRows = (value, page = pagination.current_page) => {
+    return (
+      <tr key={value.id}>
+        <td>{value.name}</td>
+        <td>
+          <Group>
+            <Button
+              color={'yellow'}
+              id={value.id}
+              onClick={() => Edit(value.id)}>
+              edit
+            </Button>
+            <Button
+              color={'red'}
+              id={value.id}
+              onClick={() => Delete(value.id, page)}>
+              delete
+            </Button>
+          </Group>
+        </td>
+      </tr>
+    )
+  }
+  const Delete = async (id, page) => {
     setVisible(true)
     try {
       const { data } = await axios.delete(`/api/shift/${id}`)
@@ -51,16 +74,36 @@ export default function ShiftIndex({ shifts, context, errors }) {
         icon: <Check />,
         color: 'teal',
       })
-      router.push('/master/shift')
+      if (filters.search == '') {
+        await axios.get(`/api/shift?page=${page}`).then(({ data }) => {
+          setPagination({ ...data })
+          setRows(data.data.map(value => getRows(value, page)))
+        })
+      } else {
+        await axios
+          .post(`/api/searchable?page=${page}`, {
+            model: 'Shift',
+            filters: {
+              search: filters.search,
+              with: filters.with,
+            },
+          })
+          .then(({ data }) => {
+            setPagination({ ...data })
+            setRows(data.data.map(value => getRows(value, page)))
+          })
+      }
     } catch (error) {
-      showNotification({
-        title: `${error.response.statusText ?? 'error'} ${
-          error.response.status ?? 500
-        }`,
-        message: `${error.response.data.message ?? 'error'}`,
-        icon: <X />,
-        color: 'red',
-      })
+      if (error.response) {
+        showNotification({
+          title: `${error.response.statusText ?? 'error'} ${
+            error.response.status ?? 500
+          }`,
+          message: `${error.response.data.message ?? 'error'}`,
+          icon: <X />,
+          color: 'red',
+        })
+      }
     } finally {
       setVisible(false)
     }
@@ -68,41 +111,13 @@ export default function ShiftIndex({ shifts, context, errors }) {
   const Edit = async id => {
     router.push(`/master/shift/${id}`)
   }
+  useEffect(() => {
+    setPagination({ ...shifts })
+    setRows(shifts.data.map(value => getRows(value, shifts)))
+  }, [])
   if (errors) {
     return <ErrorHandling errors={errors} />
   }
-
-  useEffect(() => {
-    setPagination({
-      ...shifts,
-    })
-    setRows(
-      shifts.data.map((value, index) => {
-        return (
-          <tr key={value.id}>
-            <td>{value.id}</td>
-            <td>{value.name}</td>
-            <td>
-              <Group>
-                <Button
-                  color={'yellow'}
-                  id={value.id}
-                  onClick={() => Edit(value.id)}>
-                  edit
-                </Button>
-                <Button
-                  color={'red'}
-                  id={value.id}
-                  onClick={() => Delete(value.id)}>
-                  delete
-                </Button>
-              </Group>
-            </td>
-          </tr>
-        )
-      }),
-    )
-  }, [])
   return (
     <div style={{ position: 'relative' }}>
       <LoadingOverlay visible={visible} />
@@ -118,7 +133,7 @@ export default function ShiftIndex({ shifts, context, errors }) {
           </Group>
         </Card.Section>
         <Card.Section p="md">
-          <Group position="right">
+          <Group position="left">
             <TextInput
               label="search"
               value={filters.search}
@@ -132,39 +147,12 @@ export default function ShiftIndex({ shifts, context, errors }) {
                     model: 'Shift',
                     filters: {
                       search: e.target.value,
-                      with: [],
+                      with: filters.with,
                     },
                   })
                   .then(({ data }) => {
-                    setPagination({
-                      ...data,
-                    })
-                    setRows(
-                      data.data.map((value, index) => {
-                        return (
-                          <tr key={value.id}>
-                            <td>{value.id}</td>
-                            <td>{value.name}</td>
-                            <td>
-                              <Group>
-                                <Button
-                                  color={'yellow'}
-                                  id={value.id}
-                                  onClick={() => Edit(value.id)}>
-                                  edit
-                                </Button>
-                                <Button
-                                  color={'red'}
-                                  id={value.id}
-                                  onClick={() => Delete(value.id)}>
-                                  delete
-                                </Button>
-                              </Group>
-                            </td>
-                          </tr>
-                        )
-                      }),
-                    )
+                    setPagination({ ...data })
+                    setRows(data.data.map(value => getRows(value, pagination)))
                   })
                   .catch(error => {
                     if (error.response) {
@@ -186,7 +174,6 @@ export default function ShiftIndex({ shifts, context, errors }) {
         <Table highlightOnHover verticalSpacing="xs" fontSize="xs">
           <thead>
             <tr>
-              <th>id</th>
               <th>name</th>
               <th>action</th>
             </tr>
@@ -200,9 +187,9 @@ export default function ShiftIndex({ shifts, context, errors }) {
                   {' '}
                   <Alert
                     icon={<AlertCircle size={16} />}
-                    title="Bummer!"
-                    color="red">
-                    blank data for now
+                    title="Oops!"
+                    color="yellow">
+                    no data displayed
                   </Alert>
                 </td>
               </tr>
@@ -212,70 +199,93 @@ export default function ShiftIndex({ shifts, context, errors }) {
             <tr>
               <td colSpan={'100%'}>
                 <Center>
-                  <Pagination
-                    page={pagination.current_page}
-                    onChange={page => {
-                      setPagination({
-                        ...pagination,
-                        current_page: page,
-                      })
-                      if (page != pagination.current_page) {
-                        setVisible(true)
-                        axios
-                          .get(`/api/shift?page=${page}`)
-                          .then(({ data }) => {
-                            setPagination({
-                              ...data,
+                  {filters.search == '' ? (
+                    <Pagination
+                      page={pagination.current_page}
+                      onChange={page => {
+                        setPagination({
+                          ...pagination,
+                          current_page: page,
+                        })
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .get(`/api/shift?page=${page}`)
+                            .then(({ data }) => {
+                              setPagination({ ...data })
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
                             })
-                            setRows(
-                              data.data.map((value, index) => {
-                                return (
-                                  <tr key={value.id}>
-                                    <td>{value.id}</td>
-                                    <td>{value.name}</td>
-                                    <td>
-                                      <Group>
-                                        <Button
-                                          color={'yellow'}
-                                          id={value.id}
-                                          onClick={() => Edit(value.id)}>
-                                          edit
-                                        </Button>
-                                        <Button
-                                          color={'red'}
-                                          id={value.id}
-                                          onClick={() => Delete(value.id)}>
-                                          delete
-                                        </Button>
-                                      </Group>
-                                    </td>
-                                  </tr>
-                                )
-                              }),
-                            )
-                          })
-                          .catch(error => {
-                            if (error.response) {
-                              showNotification({
-                                title: `${
-                                  error.response.statusText ?? 'error'
-                                } ${error.response.status ?? 500}`,
-                                message: `${
-                                  error.response.data.message ?? 'error'
-                                }`,
-                                icon: <X />,
-                                color: 'red',
-                              })
-                            }
-                          })
-                          .finally(() => {
-                            setVisible(false)
-                          })
-                      }
-                    }}
-                    total={pagination.last_page}
-                    boundaries={3}
-                  />
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                      total={pagination.last_page}
+                      boundaries={3}
+                    />
+                  ) : (
+                    <Pagination
+                      page={pagination.current_page}
+                      onChange={page => {
+                        setPagination({
+                          ...pagination,
+                          current_page: page,
+                        })
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .post(`/api/searchable?page=${page}`, {
+                              model: 'Shift',
+                              filters: {
+                                search: filters.search,
+                                with: filters.with,
+                              },
+                            })
+                            .then(({ data }) => {
+                              setPagination({ ...data })
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
+                            })
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                      total={pagination.last_page}
+                      boundaries={3}
+                    />
+                  )}
                 </Center>
               </td>
             </tr>

@@ -50,8 +50,8 @@ export default function CustomerEdit({ provinces, errors }) {
   const Find = async () => {
     setVisible(true)
     const { data } = await axios.get(`/api/customer/${id}/edit`)
-    form.setFieldValue('province', data.province)
-    FindCities()
+    form.setFieldValue('province', String(data.province))
+    FindCities(data.province)
     form.setValues(data)
     form.setFieldValue('email', data.user.email)
     form.setFieldValue('name', data.user.name)
@@ -96,7 +96,7 @@ export default function CustomerEdit({ provinces, errors }) {
       const cities = data.map(city => {
         return {
           value: String(city.id),
-          label: String(city.nama),
+          label: String(city.name),
         }
       })
       setCities([...cities])
@@ -106,6 +106,7 @@ export default function CustomerEdit({ provinces, errors }) {
     Find()
   }, [])
   if (errors) {
+    console.log(errors)
     return <ErrorHandling errors={errors} />
   }
   return (
@@ -155,7 +156,6 @@ export default function CustomerEdit({ provinces, errors }) {
                 </Grid.Col>
                 <Grid.Col span={12}>
                   <PasswordInput
-                    required
                     id="password"
                     label="password"
                     placeholder="password"
@@ -278,7 +278,7 @@ export async function getServerSideProps(context) {
     const provinces = data.map(province => {
       return {
         value: String(province.id),
-        label: String(province.nama),
+        label: String(province.name),
       }
     })
     return {

@@ -270,7 +270,7 @@ export async function getServerSideProps(context) {
     const products = product.data.map(item => {
       return {
         value: String(item.id),
-        label: String(item.part_name),
+        label: String(`${item.part_name} ${item.part_number}`),
       }
     })
     const machines = machine.data.map(item => {

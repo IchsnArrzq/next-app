@@ -79,10 +79,11 @@ export default function CustomerCreate({ provinces, errors }) {
         form.setFieldValue('city', '')
         setCities([])
         const { data } = await axios.get(`/api/city/${province}`)
+        console.log(data)
         const cities = data.map(city => {
           return {
             value: String(city.id),
-            label: String(city.nama),
+            label: String(city.name),
           }
         })
         setCities([...cities])
@@ -264,7 +265,7 @@ export async function getServerSideProps(context) {
     const provinces = data.map(province => {
       return {
         value: String(province.id),
-        label: String(province.nama),
+        label: String(province.name),
       }
     })
     return {
