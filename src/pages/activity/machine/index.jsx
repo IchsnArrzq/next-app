@@ -19,52 +19,127 @@ import {
   Title,
 } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
-
-export default function MachineIndex({ machine, time, errors }) {
-  const [opened, setOpen] = useState(false)
-  const [machines, setMachines] = useState([])
+export default function MachineIndex({ categoryMachine, time, errors }) {
+  const [opened, setOpen] = useState(0)
+  const [categoryMachines, setCategoryMachines] = useState([])
   const [planningMachines, setPlanningMachines] = useState([])
-  const HandleCheck = async index => {
-    machines[index].show = machines[index].show ? false : true
-    if (machines[index]) {
+  const [machines, setMachines] = useState([])
+  const arrayUnique = array => {
+    var a = array.concat()
+    for (var i = 0; i < a.length; ++i) {
+      for (var j = i + 1; j < a.length; ++j) {
+        if (a[i] === a[j]) a.splice(j--, 1)
+      }
+    }
+    return a
+  }
+  const HandleCheck = async machine => {
+    if (machines.find(value => value.id == machine.id)) {
+      machines.find(value => value.id == machine.id).show = machines.find(
+        value => value.id == machine.id,
+      ).show
+        ? 0
+        : 1
+    } else {
+      machine.show = true
+    }
+    if (machine) {
       const { data } = await axios.post('/api/monitor', {
         hour: 7,
         minute: 0,
         second: 0,
-        machine: machines[index].id,
+        machine: machine.id,
       })
-      planningMachines[machines[index].id] = data
+      planningMachines[machine.id] = data
       setPlanningMachines([...planningMachines])
     }
-    setMachines([...machines])
+    setMachines(arrayUnique(machines.concat(machine)))
   }
+  const getMachines = categoryMachine => (
+    <Table fontSize="xs" highlightOnHover>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>name</th>
+          <th>status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {categoryMachine.machines.map(machine => {
+          return (
+            <tr key={machine.id} htmlFor={machine.id}>
+              <td>
+                <Checkbox
+                  id={machine.id}
+                  checked={machine.show}
+                  onChange={() => HandleCheck(machine)}
+                />
+              </td>
+              <td>
+                {machine.name}
+              </td>
+              <td>
+                {machine?.production_status_monitor?.status ? (
+                  <Badge color={'teal'} children="run" />
+                ) : (
+                  <Badge color={'red'} children="stop" />
+                )}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </Table>
+  )
+  const getCategoryMachines = () => (
+    <Accordion>
+      {categoryMachines.map(categoryMachine => {
+        return (
+          <Accordion.Item
+            key={categoryMachine.id}
+            label={categoryMachine.name}
+            iconPosition="right">
+            {getMachines(categoryMachine)}
+          </Accordion.Item>
+        )
+      })}
+    </Accordion>
+  )
+
+  useEffect(() => {
+    setCategoryMachines(categoryMachine)
+    categoryMachine.map(item =>
+      setMachines([
+        ...machines,
+        ...item.machines.map(value => {
+          value.show = 0
+          return value
+        }),
+      ]),
+    )
+  }, [])
+
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('start')
-      machines.forEach(async (item, index) => {
-        if (item.show) {
+      machines.forEach(async machine => {
+        if (machine.show) {
           const { data } = await axios.post('/api/monitor', {
             hour: 7,
             minute: 0,
             second: 0,
-            machine: item.id,
+            machine: machine.id,
           })
-          planningMachines[machines[index].id] = data
+          planningMachines[machine.id] = data
           setPlanningMachines([...planningMachines])
         } else {
-          planningMachines[machines[index].id] = null
+          planningMachines[machine.id] = null
           setPlanningMachines([...planningMachines])
         }
       })
       console.log('end')
     }, 10000)
     return () => clearInterval(interval)
-  }, [])
-  if (errors) {
-    return <ErrorHandling errors={errors} />
-  }
-  useEffect(() => {
-    setMachines(machine.map(value => ({ ...value, show: true })))
   }, [])
   return (
     <Grid columns={12} gu tter="xs">
@@ -73,43 +148,7 @@ export default function MachineIndex({ machine, time, errors }) {
       <Grid.Col span={opened ? 3 : 1.5}>
         <Collapse in={opened}>
           <Stack>
-            <Card p={'xs'}>
-              <Group position="center" spacing="xs">
-                <Title order={5}>machine list</Title>
-                <Table fontSize="xs" highlightOnHover>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>name</th>
-                      <th>status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {machines.map((machine, index) => {
-                      return (
-                        <tr key={index} htmlFor={index}>
-                          <td>
-                            <Checkbox
-                              id={index}
-                              checked={machines[index].show}
-                              onChange={() => HandleCheck(index)}
-                            />
-                          </td>
-                          <td>{machine.name}</td>
-                          <td>
-                            {machine?.production_status_monitor?.status ? (
-                              <Badge color={'teal'} children="run" />
-                            ) : (
-                              <Badge color={'red'} children="stop" />
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </Table>
-              </Group>
-            </Card>
+            <Card p={'xs'}>{getCategoryMachines()}</Card>
           </Stack>
         </Collapse>
       </Grid.Col>
@@ -126,7 +165,7 @@ export default function MachineIndex({ machine, time, errors }) {
           <Card p={'xs'}>
             <Stack>
               {machines
-                .filter(machine => machine.show == true)
+                .filter(machine => machine.show == 1)
                 .map((item, key) => {
                   return (
                     <div key={key}>
@@ -321,7 +360,7 @@ export async function getServerSideProps(context) {
       minute: 0,
       second: 0,
     })
-    const machine = await axios.get('/api/machine', {
+    const categoryMachine = await axios.get('/api/category-machine', {
       headers: {
         origin: process.env.ORIGIN,
         Cookie: context.req.headers.cookie,
@@ -329,7 +368,7 @@ export async function getServerSideProps(context) {
     })
     return {
       props: {
-        machine: machine.data,
+        categoryMachine: categoryMachine.data,
         time: time.data,
         errors: null,
       },
@@ -337,7 +376,7 @@ export async function getServerSideProps(context) {
   } catch (error) {
     return {
       props: {
-        machine: null,
+        categoryMachine: null,
         time: null,
         errors: JSON.parse(JSON.stringify(error)),
       },

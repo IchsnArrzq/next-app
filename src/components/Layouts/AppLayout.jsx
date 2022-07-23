@@ -43,6 +43,8 @@ import {
   Building,
   Engine,
   Subtask,
+  Report,
+  ReportAnalytics,
 } from 'tabler-icons-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -309,6 +311,33 @@ const AppLayout = ({ children }) => {
                     ) : (
                       <ThemeIcon color="violet" variant="light">
                         <CalendarStats size={14} />
+                      </ThemeIcon>
+                    )}
+                  </UnstyledButton>
+                </Group>
+              </Accordion.Item>
+
+              <Accordion.Item
+                label="Report"
+                icon={
+                  <ThemeIcon color="violet" variant="light">
+                    <Report size={14} />
+                  </ThemeIcon>
+                }>
+                <Group>
+                  <UnstyledButton
+                    style={{ width: '100%' }}
+                    onClick={() => router.push('/report/production-report')}>
+                    {navbar == 250 ? (
+                      <Group position="apart">
+                        <Title order={6}>Production Report</Title>
+                        <ThemeIcon color="violet" variant="light">
+                          <ReportAnalytics size={14} />
+                        </ThemeIcon>
+                      </Group>
+                    ) : (
+                      <ThemeIcon color="violet" variant="light">
+                        <DeviceDesktopAnalytics size={14} />
                       </ThemeIcon>
                     )}
                   </UnstyledButton>

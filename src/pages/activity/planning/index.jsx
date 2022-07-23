@@ -27,6 +27,35 @@ export default function PlanningIndex({ plannings, errors }) {
     with: ['product', 'machine', 'shift', 'product.customer'],
   })
   const [rows, setRows] = useState([])
+  const getRows = (value, page = pagination.current_page) => {
+    return (
+      <tr key={value.id}>
+        <td>{value.machine.name}</td>
+        <td>{value.product.part_name}</td>
+        <td>{value.qty_planning}</td>
+        <td>{value.shift.name}</td>
+        <td>{value.datetimein}</td>
+        <td>{value.datetimeout}</td>
+        <td>{value.total}</td>
+        <td>
+          <Group>
+            <Button
+              color={'yellow'}
+              id={value.id}
+              onClick={() => Edit(value.id)}>
+              edit
+            </Button>
+            <Button
+              color={'red'}
+              id={value.id}
+              onClick={() => Delete(value.id, page)}>
+              delete
+            </Button>
+          </Group>
+        </td>
+      </tr>
+    )
+  }
   const Delete = async (id, page) => {
     setVisible(true)
     try {
@@ -44,37 +73,7 @@ export default function PlanningIndex({ plannings, errors }) {
           setPagination({
             ...data,
           })
-          setRows(
-            data.data.map(value => {
-              return (
-                <tr key={value.id}>
-                  <td>{value.machine.name}</td>
-                  <td>{value.product.part_name}</td>
-                  <td>{value.qty_planning}</td>
-                  <td>{value.shift.name}</td>
-                  <td>{value.datetimein}</td>
-                  <td>{value.datetimeout}</td>
-                  <td>{value.total}</td>
-                  <td>
-                    <Group>
-                      <Button
-                        color={'yellow'}
-                        id={value.id}
-                        onClick={() => Edit(value.id)}>
-                        edit
-                      </Button>
-                      <Button
-                        color={'red'}
-                        id={value.id}
-                        onClick={() => Delete(value.id, page)}>
-                        delete
-                      </Button>
-                    </Group>
-                  </td>
-                </tr>
-              )
-            }),
-          )
+          setRows(data.data.map(value => getRows(value, page)))
         })
         .catch(error => {
           if (error.response) {
@@ -114,37 +113,7 @@ export default function PlanningIndex({ plannings, errors }) {
     setPagination({
       ...plannings,
     })
-    setRows(
-      plannings.data.map(value => {
-        return (
-          <tr key={value.id}>
-            <td>{value.machine.name}</td>
-            <td>{value.product.part_name}</td>
-            <td>{value.qty_planning}</td>
-            <td>{value.shift.name}</td>
-            <td>{value.datetimein}</td>
-            <td>{value.datetimeout}</td>
-            <td>{value.total}</td>
-            <td>
-              <Group>
-                <Button
-                  color={'yellow'}
-                  id={value.id}
-                  onClick={() => Edit(value.id)}>
-                  edit
-                </Button>
-                <Button
-                  color={'red'}
-                  id={value.id}
-                  onClick={() => Delete(value.id, plannings.current_page)}>
-                  delete
-                </Button>
-              </Group>
-            </td>
-          </tr>
-        )
-      }),
-    )
+    setRows(plannings.data.map(value => getRows(value)))
   }, [])
   return (
     <div style={{ position: 'relative' }}>
@@ -152,7 +121,7 @@ export default function PlanningIndex({ plannings, errors }) {
       <Card px="xl" py="xl" shadow="sm">
         <Card.Section p="md">
           <Group position="apart">
-            <Title order={5}>Planning List</Title>
+            <Title order={5}>Planning Machine List</Title>
             <Button
               variant="filled"
               onClick={() => router.push('/activity/planning/create')}>
@@ -182,42 +151,20 @@ export default function PlanningIndex({ plannings, errors }) {
                     setPagination({
                       ...data,
                     })
-                    setRows(
-                      data.data.map(value => {
-                        return (
-                          <tr key={value.id}>
-                            <td>{value.machine.name}</td>
-                            <td>{value.product.part_name}</td>
-                            <td>{value.qty_planning}</td>
-                            <td>{value.shift.name}</td>
-                            <td>{value.datetimein}</td>
-                            <td>{value.datetimeout}</td>
-                            <td>{value.total}</td>
-                            <td>
-                              <Group>
-                                <Button
-                                  color={'yellow'}
-                                  id={value.id}
-                                  onClick={() => Edit(value.id)}>
-                                  edit
-                                </Button>
-                                <Button
-                                  color={'red'}
-                                  id={value.id}
-                                  onClick={() =>
-                                    Delete(value.id, plannings.current_page)
-                                  }>
-                                  delete
-                                </Button>
-                              </Group>
-                            </td>
-                          </tr>
-                        )
-                      }),
-                    )
+                    console.log(data.data.length)
+                    setRows(data.data.map(value => getRows(value)))
                   })
                   .catch(error => {
-                    console.log(error)
+                    if (error.response) {
+                      showNotification({
+                        title: `${error.response.statusText ?? 'error'} ${
+                          error.response.status ?? 500
+                        }`,
+                        message: `${error.response.data.message ?? 'error'}`,
+                        icon: <X />,
+                        color: 'red',
+                      })
+                    }
                   })
               }}
             />
@@ -257,76 +204,94 @@ export default function PlanningIndex({ plannings, errors }) {
             <tr>
               <td colSpan={'100%'}>
                 <Center>
-                  <Pagination
-                    page={pagination.current_page}
-                    onChange={page => {
-                      setPagination({
-                        ...pagination,
-                      })
-                      if (page != pagination.current_page) {
-                        setVisible(true)
-                        axios
-                          .get(`/api/planning?page=${page}`)
-                          .then(({ data }) => {
-                            setPagination({
-                              ...data,
-                            })
-                            setRows(
-                              data.data.map(value => {
-                                return (
-                                  <tr key={value.id}>
-                                    <td>{value.machine.name}</td>
-                                    <td>{value.product.part_name}</td>
-                                    <td>{value.qty_planning}</td>
-                                    <td>{value.shift.name}</td>
-                                    <td>{value.datetimein}</td>
-                                    <td>{value.datetimeout}</td>
-                                    <td>{value.total}</td>
-                                    <td>
-                                      <Group>
-                                        <Button
-                                          color={'yellow'}
-                                          id={value.id}
-                                          onClick={() => Edit(value.id)}>
-                                          edit
-                                        </Button>
-                                        <Button
-                                          color={'red'}
-                                          id={value.id}
-                                          onClick={() =>
-                                            Delete(value.id, page)
-                                          }>
-                                          delete
-                                        </Button>
-                                      </Group>
-                                    </td>
-                                  </tr>
-                                )
-                              }),
-                            )
-                          })
-                          .catch(error => {
-                            if (error.response) {
-                              showNotification({
-                                title: `${
-                                  error.response.statusText ?? 'error'
-                                } ${error.response.status ?? 500}`,
-                                message: `${
-                                  error.response.data.message ?? 'error'
-                                }`,
-                                icon: <X />,
-                                color: 'red',
+                  {filters.search == '' ? (
+                    <Pagination
+                      page={pagination.current_page}
+                      onChange={page => {
+                        setPagination({
+                          ...pagination,
+                        })
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .get(`/api/planning?page=${page}`)
+                            .then(({ data }) => {
+                              setPagination({
+                                ...data,
                               })
-                            }
-                          })
-                          .finally(() => {
-                            setVisible(false)
-                          })
-                      }
-                    }}
-                    total={pagination.last_page}
-                    boundaries={3}
-                  />
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
+                            })
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                      total={pagination.last_page}
+                      boundaries={3}
+                    />
+                  ) : (
+                    <Pagination
+                      page={pagination.current_page}
+                      onChange={page => {
+                        setPagination({
+                          ...pagination,
+                          current_page: page,
+                        })
+                        if (page != pagination.current_page) {
+                          setVisible(true)
+                          axios
+                            .post(`/api/searchable?page=${page}`, {
+                              model: 'PlanningMachine',
+                              filters: {
+                                search: filters.search,
+                                with: filters.with,
+                              },
+                            })
+                            .then(({ data }) => {
+                              setPagination({ ...data })
+                              setRows(
+                                data.data.map(value => getRows(value, page)),
+                              )
+                            })
+                            .catch(error => {
+                              if (error.response) {
+                                showNotification({
+                                  title: `${
+                                    error.response.statusText ?? 'error'
+                                  } ${error.response.status ?? 500}`,
+                                  message: `${
+                                    error.response.data.message ?? 'error'
+                                  }`,
+                                  icon: <X />,
+                                  color: 'red',
+                                })
+                              }
+                            })
+                            .finally(() => {
+                              setVisible(false)
+                            })
+                        }
+                      }}
+                      total={pagination.last_page}
+                      boundaries={3}
+                    />
+                  )}
                 </Center>
               </td>
             </tr>

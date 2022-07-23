@@ -9,6 +9,7 @@ import {
   NumberInput,
   Select,
   Stack,
+  Textarea,
   Title,
 } from '@mantine/core'
 import { DatePicker, TimeInput } from '@mantine/dates'
@@ -35,6 +36,7 @@ export default function PlanningEdit({ products, machines, shifts }) {
       dateout: '',
       timein: '',
       timeout: '',
+      remark: '',
     },
   })
   const Submit = async () => {
@@ -51,6 +53,7 @@ export default function PlanningEdit({ products, machines, shifts }) {
         datetimeout: `${dayjs(form.values.dateout).format(
           'YYYY-MM-DD',
         )}  ${dayjs(form.values.timeout).format('H:m')}`,
+        remark: form.values.remark,
       })
       showNotification({
         title: data.title ?? 'success',
@@ -92,6 +95,7 @@ export default function PlanningEdit({ products, machines, shifts }) {
       form.setFieldValue('dateout', dayjs(data.datetimeout).toDate())
       form.setFieldValue('timein', dayjs(data.datetimein).toDate())
       form.setFieldValue('timeout', dayjs(data.datetimeout).toDate())
+      form.setFieldValue('remark', data.remark)
     } catch (error) {
       if (error.response) {
         showNotification({
@@ -241,6 +245,13 @@ export default function PlanningEdit({ products, machines, shifts }) {
                       />
                     </Grid.Col>
                   </Grid>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                  <Textarea
+                    placeholder="remark"
+                    label="remark"
+                    {...form.getInputProps('remark')}
+                  />
                 </Grid.Col>
               </Grid>
             </Group>
