@@ -3,15 +3,19 @@ import AppLayout from '@/components/Layouts/AppLayout'
 import axios from '@/lib/axios'
 import {
   Alert,
+  Anchor,
   Button,
   Card,
   Center,
   Group,
   LoadingOverlay,
+  Modal,
   Pagination,
   Table,
+  Text,
   TextInput,
   Title,
+  FileInput,
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 import { useRouter } from 'next/router'
@@ -26,6 +30,7 @@ export default function PlanningIndex({ plannings, errors }) {
     search: '',
     with: ['product', 'machine', 'shift', 'product.customer'],
   })
+  const [opened, setOpened] = useState(false)
   const [rows, setRows] = useState([])
   const getRows = (value, page = pagination.current_page) => {
     return (
@@ -118,15 +123,40 @@ export default function PlanningIndex({ plannings, errors }) {
   return (
     <div style={{ position: 'relative' }}>
       <LoadingOverlay visible={visible} />
+      <Modal
+        centered
+        size={'xl'}
+        title="Import Planning Machine"
+        opened={opened}
+        onClose={() => setOpened(true)}>
+        <Center>
+          <Text>
+            Import Plannning Machine{' '}
+            <Anchor download={true} href={process.env.NEXT_PUBLIC_BACKEND_URL}>
+              download template import?
+            </Anchor>{' '}
+          </Text>
+          <FileInput placeholder="Pick file" label="Your resume" required />
+        </Center>
+      </Modal>
       <Card px="xl" py="xl" shadow="sm">
         <Card.Section p="md">
           <Group position="apart">
             <Title order={5}>Planning Machine List</Title>
-            <Button
-              variant="filled"
-              onClick={() => router.push('/activity/planning/create')}>
-              create
-            </Button>
+
+            <Group>
+              <Button
+                variant="filled"
+                color={'green'}
+                onClick={() => setOpened(true)}>
+                import
+              </Button>
+              <Button
+                variant="filled"
+                onClick={() => router.push('/activity/planning/create')}>
+                create
+              </Button>
+            </Group>
           </Group>
         </Card.Section>
         <Card.Section p="md">
