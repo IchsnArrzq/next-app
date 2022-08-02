@@ -2,13 +2,17 @@ import AppLayout from '@/components/Layouts/AppLayout'
 import React, { useEffect, useState } from 'react'
 import {
   Alert,
+  Anchor,
   Button,
   Card,
   Center,
   Group,
   LoadingOverlay,
+  Modal,
   Pagination,
+  Stack,
   Table,
+  Text,
   TextInput,
   Title,
 } from '@mantine/core'
@@ -21,6 +25,7 @@ import { useRouter } from 'next/router'
 import axios from '@/lib/axios'
 import { AlertCircle, Check, Search, X } from 'tabler-icons-react'
 import ErrorHandling from '@/components/ErrorHandling'
+import { useForm } from '@mantine/form'
 
 export default function ProductIndex({ products, errors }) {
   const router = useRouter()
@@ -31,7 +36,13 @@ export default function ProductIndex({ products, errors }) {
     with: ['customer', 'customer.user', 'imageables', 'process_productions'],
   })
   const [rows, setRows] = useState([])
-
+  const [opened, setOpened] = useState(false)
+  const [file, setFile] = useState()
+  const form = useForm({
+    initialValues: {
+      images: [],
+    },
+  })
   const getRows = (value, page = pagination.current_page) => {
     return (
       <tr key={value.id}>
@@ -120,15 +131,49 @@ export default function ProductIndex({ products, errors }) {
   return (
     <div style={{ position: 'relative' }}>
       <LoadingOverlay visible={visible} />
+      <Modal
+        centered
+        size={'xl'}
+        title="Import Product"
+        opened={opened}
+        onClose={() => setOpened(false)}>
+        <Stack>
+          <Center>
+            <Text>
+              <Anchor
+                download={true}
+                href={process.env.NEXT_PUBLIC_BACKEND_URL}>
+                download template import?
+              </Anchor>
+            </Text>
+          </Center>
+          <TextInput
+            id="file"
+            multiple
+            label="File"
+            value={file}
+            onChange={e => setFile(e.target.files[0])}
+            type="file"
+          />
+        </Stack>
+      </Modal>
       <Card px="xl" py="xl" shadow="sm">
         <Card.Section p="md">
           <Group position="apart">
             <Title order={5}>Product List</Title>
-            <Button
-              variant="filled"
-              onClick={() => router.push('/master/product/create')}>
-              create
-            </Button>
+            <Group>
+              <Button
+                variant="filled"
+                color={'violet'}
+                onClick={() => setOpened(true)}>
+                import
+              </Button>
+              <Button
+                variant="filled"
+                onClick={() => router.push('/master/product/create')}>
+                create
+              </Button>
+            </Group>
           </Group>
         </Card.Section>
         <Card.Section p="md">

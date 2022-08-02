@@ -18,8 +18,11 @@ import {
   Text,
   Title,
 } from '@mantine/core'
+import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
 import React, { useEffect, useState } from 'react'
 export default function MachineIndex({ categoryMachine, time, errors }) {
+  dayjs.extend(isBetween)
   const [opened, setOpen] = useState(0)
   const [categoryMachines, setCategoryMachines] = useState([])
   const [planningMachines, setPlanningMachines] = useState([])
@@ -174,30 +177,22 @@ export default function MachineIndex({ categoryMachine, time, errors }) {
                         <Grid gutter="xs" columns={12}>
                           <Grid.Col span={8}>
                             <Paper shadow={'sm'} p="md">
-                              <Accordion>
-                                {item?.planning_machines_monitor?.map(item => {
+                                {item?.planning_machines_monitor?.filter(value => {
+                                  if(dayjs().isBetween(dayjs(value.datetimein),dayjs(value.datetimeout))){
+                                    return value
+                                  }
+                                })?.map(item => {
                                   return (
-                                    <Accordion.Item
-                                      key={item.id}
-                                      label={
-                                        <Group position="apart">
-                                          <Title order={5}>
-                                            {item?.product?.part_name}|
-                                            {item?.product?.part_number}|
-                                            {item?.qty_planning}
-                                          </Title>
-                                          <Title order={5}>OOE: xx%</Title>
-                                        </Group>
-                                      }>
-                                      <Group position="apart">
-                                        <Text>{item?.shift?.name}</Text>
-                                        <Text>{item?.datetimein}</Text>
-                                        <Text>{item?.datetimeout}</Text>
+                                      <Group position="apart" mb={'lg'}>
+                                        <Text style={{  fontWeight: 'bold', }}>{item?.product?.part_name}</Text>
+                                        <div style={{ borderLeft: '1px solid black',height: '15px' }}></div>
+                                        <Text style={{  fontWeight: 'bold', }}>{item?.shift?.name}</Text>
+                                        <div style={{ borderLeft: '1px solid black',height: '15px' }}></div>
+                                        <Text style={{  fontWeight: 'bold', }}>{item?.datetimein}</Text>
+                                        <Text style={{  fontWeight: 'bold', }}>{item?.datetimeout}</Text>
                                       </Group>
-                                    </Accordion.Item>
                                   )
                                 })}
-                              </Accordion>
                               <ScrollArea scrollbarSize={2}>
                                 <Table>
                                   <thead>
@@ -301,28 +296,28 @@ export default function MachineIndex({ categoryMachine, time, errors }) {
                               </Group>
                               <Stack>
                                 <div>
-                                  <Title order={5}>line stop a</Title>
+                                  <Title order={5}>line stop machine</Title>
                                   <Progress
                                     value={
-                                      planningMachines[item.id]?.line_stop_a
+                                      planningMachines[item.id]?.line_stop_a * 100
                                     }
                                     animate
                                   />
                                 </div>
                                 <div>
-                                  <Title order={5}>line stop b</Title>
+                                  <Title order={5}>line stop material</Title>
                                   <Progress
                                     value={
-                                      planningMachines[item.id]?.line_stop_b
+                                      planningMachines[item.id]?.line_stop_b * 100
                                     }
                                     animate
                                   />
                                 </div>
                                 <div>
-                                  <Title order={5}>line stop c</Title>
+                                  <Title order={5}>line stop quality</Title>
                                   <Progress
                                     value={
-                                      planningMachines[item.id]?.line_stop_c
+                                      planningMachines[item.id]?.line_stop_c * 100
                                     }
                                     animate
                                   />
@@ -331,7 +326,7 @@ export default function MachineIndex({ categoryMachine, time, errors }) {
                                   <Title order={5}>line stop other</Title>
                                   <Progress
                                     value={
-                                      planningMachines[item.id]?.line_stop_other
+                                      planningMachines[item.id]?.line_stop_other * 100
                                     }
                                     animate
                                   />

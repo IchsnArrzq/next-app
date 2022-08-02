@@ -128,26 +128,23 @@ export default function PlanningIndex({ plannings, errors }) {
         size={'xl'}
         title="Import Planning Machine"
         opened={opened}
-        onClose={() => setOpened(true)}>
+        onClose={() => setOpened(false)}>
         <Center>
           <Text>
-            Import Plannning Machine{' '}
             <Anchor download={true} href={process.env.NEXT_PUBLIC_BACKEND_URL}>
               download template import?
-            </Anchor>{' '}
+            </Anchor>
           </Text>
-          <FileInput placeholder="Pick file" label="Your resume" required />
         </Center>
       </Modal>
       <Card px="xl" py="xl" shadow="sm">
         <Card.Section p="md">
           <Group position="apart">
             <Title order={5}>Planning Machine List</Title>
-
             <Group>
               <Button
                 variant="filled"
-                color={'green'}
+                color={'violet'}
                 onClick={() => setOpened(true)}>
                 import
               </Button>
