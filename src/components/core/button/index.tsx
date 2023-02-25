@@ -32,4 +32,6 @@ const Button = forwardRef<Ref, ButtonProps>(function (props, ref): JSX.Element {
   );
 });
 
+Button.displayName = "MyComponent";
+
 export default Button;
