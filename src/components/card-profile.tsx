@@ -32,18 +32,20 @@ const CardProfile: FC<CardProfileProps> = ({ avatar, name, login }) => {
           <Text size="md" color="text-gray-400">
             Web Developer
           </Text>
-          <Button
-            className="animate-bounce"
-            icon={
-              <div className="mr-3">
-                <IconDownload size={20} />
-              </div>
-            }
-          >
-            <Text size="xs" font="font-semibold" color="text-white">
-              Download CV
-            </Text>
-          </Button>
+          <a href="/ichsan-arrizqi.pdf" download={true}>
+            <Button
+              className="animate-bounce"
+              icon={
+                <div className="mr-3">
+                  <IconDownload size={20} />
+                </div>
+              }
+            >
+              <Text size="xs" font="font-semibold" color="text-white">
+                Download CV
+              </Text>
+            </Button>
+          </a>
         </Flex>
       </Card.Body>
     </Card>
