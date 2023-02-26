@@ -46,10 +46,15 @@ const CardAbout: FC<StateProps & CardAboutType> = ({
             <Text color="text-purple-800">ichsanarrizqi090@gmail.com</Text>
           </Flex>
           <Flex>
-            <IconBrandFacebook size={25} />
-            <IconBrandInstagram size={25} />
-            <IconBrandGithub size={25} />
-            <IconBrandLinkedin size={25} />
+            <a href="https://www.instagram.com/ichsnarrzq/">
+              <IconBrandInstagram size={25} />
+            </a>
+            <a href="https://github.com/IchsnArrzq">
+              <IconBrandGithub size={25} />
+            </a>
+            <a href="https://www.linkedin.com/in/ichsan-arrizqi-56a6a91b7/">
+              <IconBrandLinkedin size={25} />
+            </a>
           </Flex>
         </Flex>
       </Card.Body>
